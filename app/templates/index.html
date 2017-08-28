@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<br>
+<br>
+
+<h1>
+  Accounts<br>
+  {% for account in accounts %}
+    {{account}}
+  {% endfor %}
+</h1>
+
+<h1>
+  galleries<br>
+  {% for gallery in galleries %}
+    {{gallery}}
+  {% endfor %}
+</h1>
+
+<h1>
+  snaps<br>
+  {% for snap in snaps %}
+    {{snap}}
+  {% endfor %}
+</h1>
+
+<br>
+{{bla}}
+<br>
+
+{% endblock %}
