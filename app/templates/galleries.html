@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<br>
+<br>
+<br>
+logged in as {{bla}}<br><br>
+[form]<br>
+[new gallery]<br><br>
+
+<h1>
+  {% for gallery in galleries %}
+    {{gallery}}
+  {% endfor %}
+</h1>
+
+
+{% endblock %}

@@ -11,17 +11,6 @@ app.secret_key = 'SPECIALSECRETKEYWHAAA'
 BASEURL = 'http://127.0.0.1:5050/gallery/v1'
 
 
-@app.route('/')
-def index():
-    if 'user_email' in session:
-
-        bla = 'Logged in as %s' % escape(session['user_email'])
-
-        return render_template('index.html', bla=bla)
-
-    return redirect(url_for('login'))
-
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -51,25 +40,71 @@ def logout():
     return redirect(url_for('index'))
 
 
-
-"""
 @app.route('/')
-def home():
-    accounts = {}
-    galleries = {}
-    snaps = {}
+def index():
+    if 'user_email' in session:
+        bla = 'Logged in as %s' % escape(session['user_email'])
+        username = 'r@r.com'
+        password = 'r'
 
-    r = requests.get('{}/accounts'.format(BASEURL), auth=HTTPBasicAuth('admin', 'admin'))
-    print(r.json())
+        r = requests.get('{}/accounts'.format(BASEURL), auth=HTTPBasicAuth('r@r.com', 'r'))
+        print(r.json())
 
-    return render_template('index.html', accounts=accounts, galleries=galleries, snaps=snaps)
-"""
+
+        return render_template('index.html', bla=bla)
+
+    return redirect(url_for('login'))
+
+
+@app.route('/galleries')
+def galleries():
+    if 'user_email' in session:
+        bla = 'Logged in as %s' % escape(session['user_email'])
+
+        r = requests.get('{}/galleries'.format(BASEURL), auth=HTTPBasicAuth('r@r.com', 'r'))
+        response = r.json()
+        if response['status']:
+            if response['status'] == 'success':
+                galleries = response['data']
+            else:
+                galleries = []
+        else:
+            galleries = []
+
+        return render_template('galleries.html', galleries=galleries, bla=bla)
+
+    else:
+        return redirect(url_for('login'))
+
+
+@app.route('/gallery/<int:id>')
+def gallery(id):
+    if 'user_email' in session:
+        r = requests.get('{}/galleries/{}'.format(BASEURL, id), auth=HTTPBasicAuth('r@r.com', 'r'))
+        response = r.json()
+        if response['status']:
+            if response['status'] == 'success':
+                gallery = response['data']
+            else:
+                gallery = []
+        else:
+            gallery = []
+
+        return render_template('gallery.html', gallery=gallery)
+
+    else:
+        return redirect(url_for('login'))
+
+
+@app.route('/upload')
+def upload():
+    return render_template('upload.html')
+
+
+@app.route('/settings')
+def settings():
+    return render_template('settings.html')
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
-
-"""
-
-
-
-"""
