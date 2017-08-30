@@ -4,6 +4,8 @@ from flask import Flask, render_template, request, session, redirect, url_for, e
 import requests
 from requests.auth import HTTPBasicAuth
 
+from packages import func
+
 
 app = Flask(__name__)
 app.secret_key = 'SPECIALSECRETKEYWHAAA'
@@ -15,6 +17,7 @@ BASEURL = 'http://127.0.0.1:5050/gallery/v1'
 def login():
     if request.method == 'POST':
         if 'Login' in request.form:
+            new_login = func.SessionHandler(session)
             session['user_email'] = request.form['user_email']
 
             return redirect(url_for('index'))
