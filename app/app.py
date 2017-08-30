@@ -17,18 +17,18 @@ BASEURL = 'http://127.0.0.1:5050/gallery/v1'
 def login():
     if request.method == 'POST':
         if 'Login' in request.form:
-            new_login = func.SessionHandler(session)
-            session['user_email'] = request.form['user_email']
+            # new_login = func.SessionHandler(session)
+            session['username'] = request.form['username']
 
             return redirect(url_for('index'))
 
         elif 'Signup' in request.form:
-            user_email = request.form['user_email']
-            user_pass = request.form['user_pass']
+            username = request.form['username']
+            password = request.form['password']
 
             # TODO: Imp input and database checking.
-            r = requests.post(f'{BASEURL}/accounts?username={user_email}&password={user_pass}')
-            session['user_email'] = user_email
+            r = requests.post(f'{BASEURL}/accounts?username={username}&password={password}')
+            session['username'] = username
 
             return redirect(url_for('index'))
 
@@ -37,21 +37,20 @@ def login():
 
 @app.route('/logout')
 def logout():
-    # remove the user_email from the session if it's there
-    session.pop('user_email', None)
+    # remove the username from the session if it's there
+
+    # session.pop('username', None)
+    user = func.SessionHandler(session).close()
 
     return redirect(url_for('index'))
 
 
 @app.route('/')
 def index():
-    if 'user_email' in session:
-        bla = 'Logged in as %s' % escape(session['user_email'])
-        username = 'r@r.com'
-        password = 'r'
+    if 'username' in session:
+        bla = 'Logged in as %s' % escape(session['username'])
 
-        r = requests.get('{}/accounts'.format(BASEURL), auth=HTTPBasicAuth('r@r.com', 'r'))
-        print(r.json())
+        # r = requests.get('{}/accounts'.format(BASEURL), auth=HTTPBasicAuth('r@r.com', 'r'))
 
 
         return render_template('index.html', bla=bla)
@@ -61,8 +60,8 @@ def index():
 
 @app.route('/galleries')
 def galleries():
-    if 'user_email' in session:
-        bla = 'Logged in as %s' % escape(session['user_email'])
+    if 'username' in session:
+        bla = 'Logged in as %s' % escape(session['username'])
 
         r = requests.get('{}/galleries'.format(BASEURL), auth=HTTPBasicAuth('r@r.com', 'r'))
         response = r.json()
@@ -82,7 +81,7 @@ def galleries():
 
 @app.route('/gallery/<int:id>')
 def gallery(id):
-    if 'user_email' in session:
+    if 'username' in session:
         r = requests.get('{}/galleries/{}'.format(BASEURL, id), auth=HTTPBasicAuth('r@r.com', 'r'))
         response = r.json()
         if response['status']:

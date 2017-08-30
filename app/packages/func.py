@@ -1,21 +1,27 @@
-def something_session_related():
-    pass
+import requests
+
+from config import config
+
 
 class SessionHandler():
-    def __init__(self, session, username, password):
+    def __init__(self, session):
         self.session = session
-        self.username = username
-        self.password = password
 
-    def new(self):
+    def new(self, username, password):
         self.session['username'] = username
         # TODO: password should get check in db only.
+        # r = requests.post(f'{BASEURL}/accounts?username={username}&password={password}')
+
+        if session['username']:
+            # if username in database
+            # check password
+            # error check
+            # return session
+            # else add new user and password to database
+            pass
 
         return self.session
 
     def close(self):
-        session.pop('username', None)
-
-
-    def _print_session(self):
-        print(self.session)
+        # TODO: remove any other attris in session
+        self.session.pop('username', None)
