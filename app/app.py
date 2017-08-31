@@ -104,7 +104,10 @@ def gallery(id):
 
 @app.route('/new_gallery', methods=['GET', 'POST'])
 def new_gallery():
-    print('new gallery')
+    title = request.form['title']
+
+    r = requests.post('{}/galleries?title={}'.format(BASEURL, title), auth=HTTPBasicAuth('r@r.com', 'r'))
+
     return redirect(url_for('galleries'))
 
 
