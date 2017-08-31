@@ -3,31 +3,31 @@
 <br>
 <br>
 <br>
-logged in as {{bla}}<br><br>
-[form]<br>
+{{bla}}<br><br>
 
-<div class="container">
-
-    <form action="/new_gallery" method="POST">
-      <label for="title" class="sr-only">Gallery Title</label>
-      <input type="email" name="title" id="title" class="form-control" placeholder="..." required autofocus>
-      </div>
-
-      <button class="btn btn-lg btn-primary btn-block" type="submit">Post</button>
-    </form>
-
+<form class="form-inline" action="/new_gallery" method="POST">
+  <div class="form-group mx-sm-3">
+    <label for="title" class="sr-only">Gallery Title</label>
+    <input type="text" name="title" id="title" class="form-control" placeholder="..." required autofocus>
   </div>
+  <button class="btn btn-primary" type="submit">Post</button>
+</form>
 
-[new gallery]<br><br>
+<hr>
 
-<h1>
   {% for gallery in galleries %}
+
   <a href="/gallery/{{gallery.id}}">
-    {{gallery}}
+    <div class="card text-white bg-dark mb-3" style="max-width: 100%;">
+  <div class="card-header">Header</div>
+  <div class="card-body">
+    <h4 class="card-title">Dark card title</h4>
+    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+  </div>
+</div>
   </a>
-    <hr>
+
   {% endfor %}
-</h1>
 
 
 {% endblock %}
