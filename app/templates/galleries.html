@@ -1,9 +1,5 @@
 {% extends "base.html" %}
 {% block content %}
-<br>
-<br>
-<br>
-{{user}}<br><br>
 
 <form class="form-inline" action="/new_gallery" method="POST">
   <div class="form-group mx-sm-3">
@@ -19,9 +15,11 @@
 
   <a href="/gallery/{{gallery.id}}">
     <div class="card text-white bg-dark mb-3" style="max-width: 100%;">
-  <div class="card-header">Header</div>
+  <div class="card-header">{{gallery.initdate}} | [{{ gallery.snaps|length }}]</div>
   <div class="card-body">
-    <h4 class="card-title">Dark card title</h4>
+    <br>
+    <br>
+    <h4 class="card-title">{{gallery.title}}</h4>
     <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
   </div>
 </div>

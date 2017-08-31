@@ -54,8 +54,8 @@ def logout():
 
 @app.route('/')
 def index():
-    if 'username' in func.SessionHandler(session).get():
-        user = func.SessionHandler(session).get()
+    user = func.SessionHandler(session).get()
+    if 'username' in user:
         return render_template('index.html', user=user)
 
     return redirect(url_for('login'))
@@ -66,18 +66,19 @@ def galleries():
     user = func.SessionHandler(session).get()
 
     if 'username' in user:
-        print(user)
-
         r = requests.get(
             '{}/galleries'.format(BASEURL),
             auth=HTTPBasicAuth(user['username'], user['password'])
             )
         response = r.json()
+
         if response['status']:
             if response['status'] == 'success':
                 galleries = response['data']
+
             else:
                 galleries = []
+
         else:
             galleries = []
 
@@ -103,7 +104,7 @@ def gallery(id):
         else:
             gallery = []
 
-        return render_template('gallery.html', gallery=gallery)
+        return render_template('gallery.html', gallery=gallery, user=user)
 
     else:
         return redirect(url_for('login'))
@@ -143,17 +144,19 @@ def new_snap():
         return redirect(f'gallery/{gallery_id}')
 
     else:
-        return render_template('index.html')
+        return render_template('index.html', user=user)
 
 
 @app.route('/upload')
 def upload():
-    return render_template('upload.html')
+    user = func.SessionHandler(session).get()
+    return render_template('upload.html', user=user)
 
 
 @app.route('/settings')
 def settings():
-    return render_template('settings.html')
+    user = func.SessionHandler(session).get()
+    return render_template('settings.html', user=user)
 
 
 if __name__ == '__main__':
