@@ -1,4 +1,5 @@
 import requests
+from requests.auth import HTTPBasicAuth
 
 from config import config
 
@@ -8,19 +9,30 @@ class SessionHandler():
         self.session = session
 
     def new(self, username, password):
-        self.session['username'] = username
-        # TODO: password should get check in db only.
-        # r = requests.post(f'{BASEURL}/accounts?username={username}&password={password}')
-
-        if session['username']:
+        # TODO: this is a mess
+        """
+        if self.session['username']:
             # if username in database
             # check password
             # error check
             # return session
             # else add new user and password to database
             pass
+        """
 
-        return self.session
+        r = requests.get('{}/accounts'.format(config.BASEURL), auth=HTTPBasicAuth(username, password))
+
+        try:
+            print(r.json())
+            self.session['username'] = username
+            self.session['password'] = password
+
+            return True
+
+        except:
+            print('no such user')
+
+            return False
 
     def close(self):
         # TODO: remove any other attris in session

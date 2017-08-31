@@ -252,6 +252,7 @@ class Galleries(Resource):
                 if raw_snap != None:
                     get_gallery.snaps.append(raw_snap)
                     db.session.commit()
+                    print('snaps is in there')
 
                 else:
                     return resp(error='no such snap id')

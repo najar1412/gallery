@@ -3,10 +3,16 @@
 <br>
 <br>
 <br>
-[form]<br>
-[new gallery]<br><br>
 
-{{gallery}}
+{{gallery.0.title}}
+
+<hr>
+
+{% for snap in gallery.0.snaps %}
+
+  {{snap.id}}: {{snap.title}}<br>
+
+{% endfor %}
 
 
 {% endblock %}

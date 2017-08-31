@@ -5,11 +5,27 @@
 <br>
 logged in as {{bla}}<br><br>
 [form]<br>
+
+<div class="container">
+
+    <form action="/new_gallery" method="POST">
+      <label for="title" class="sr-only">Gallery Title</label>
+      <input type="email" name="title" id="title" class="form-control" placeholder="..." required autofocus>
+      </div>
+
+      <button class="btn btn-lg btn-primary btn-block" type="submit">Post</button>
+    </form>
+
+  </div>
+
 [new gallery]<br><br>
 
 <h1>
   {% for gallery in galleries %}
+  <a href="/gallery/{{gallery.id}}">
     {{gallery}}
+  </a>
+    <hr>
   {% endfor %}
 </h1>
 

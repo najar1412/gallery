@@ -17,10 +17,14 @@ BASEURL = 'http://127.0.0.1:5050/gallery/v1'
 def login():
     if request.method == 'POST':
         if 'Login' in request.form:
-            # new_login = func.SessionHandler(session)
-            session['username'] = request.form['username']
+            new_login = func.SessionHandler(session).new(request.form['username'], request.form['password'])
+            if new_login:
 
-            return redirect(url_for('index'))
+                return redirect(url_for('index'))
+
+            else:
+                print('no cred')
+                return redirect(url_for('login'))
 
         elif 'Signup' in request.form:
             username = request.form['username']
@@ -96,6 +100,12 @@ def gallery(id):
 
     else:
         return redirect(url_for('login'))
+
+
+@app.route('/new_gallery', methods=['GET', 'POST'])
+def new_gallery():
+    print('new gallery')
+    return redirect(url_for('galleries'))
 
 
 @app.route('/upload')
