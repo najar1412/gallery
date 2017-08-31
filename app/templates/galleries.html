@@ -1,11 +1,18 @@
 {% extends "base.html" %}
 {% block content %}
 
+<hr>
+
 <form class="form-inline" action="/new_gallery" method="POST">
   <div class="form-group mx-sm-3">
-    <label for="title" class="sr-only">Gallery Title</label>
-    <input type="text" name="title" id="title" class="form-control" placeholder="..." required autofocus>
+    <input type="text" name="title" id="title" class="form-control" placeholder="Gallery Name" required>
   </div>
+  <label class="custom-file">
+    <input type="file" id="file2" class="custom-file-input">
+    <span class="custom-file-control"></span>
+
+  </label>
+   &emsp; |  &emsp;
   <button class="btn btn-primary" type="submit">Post</button>
 </form>
 
@@ -13,17 +20,23 @@
 
   {% for gallery in galleries %}
 
-  <a href="/gallery/{{gallery.id}}">
+
     <div class="card text-white bg-dark mb-3" style="max-width: 100%;">
-  <div class="card-header">{{gallery.initdate}} | [{{ gallery.snaps|length }}]</div>
+  <div class="card-header"><small>{{gallery.initdate}} | [{{ gallery.snaps|length }}]</small></div>
   <div class="card-body">
     <br>
     <br>
-    <h4 class="card-title">{{gallery.title}}</h4>
-    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+    <a href="/gallery/{{gallery.id}}">
+      <h1 class="card-title">{{gallery.title}}</h1>
+    </a>
+    <p class="card-text">
+      <button class="btn btn-light btn-sm" type="submit">Lock</button>
+      <button class="btn btn-light btn-sm" type="submit">Share</button>
+      <button class="btn btn-light btn-sm" type="submit">Edit</button> &emsp; |  &emsp;
+      <button class="btn btn-outline-danger btn-sm" type="submit">Delete</button>
+    </p>
   </div>
 </div>
-  </a>
 
   {% endfor %}
 

@@ -147,12 +147,6 @@ def new_snap():
         return render_template('index.html', user=user)
 
 
-@app.route('/upload')
-def upload():
-    user = func.SessionHandler(session).get()
-    return render_template('upload.html', user=user)
-
-
 @app.route('/settings')
 def settings():
     user = func.SessionHandler(session).get()

@@ -282,9 +282,9 @@ class Galleries(Resource):
 
 class GalleriesL(Resource):
     def get(self):
-        raw_galleries = Gallery.query.all()
+        accounts_galleries = Account.query.filter_by(username=auth.username()).first().galleries
 
-        response = resp(data=convert.jsonify(raw_galleries), status='success')
+        response = resp(data=convert.jsonify(accounts_galleries), status='success')
         return response, 200
 
 
