@@ -9,12 +9,14 @@ class SessionHandler():
         self.session = session
 
     def new(self, username, password):
+        # TODO; should password be stored in session? sec issue?
         # TODO: request returns all login details, security issue.
         # make api route that just returns True/False.
         r = requests.get('{}/accounts'.format(config.BASEURL), auth=HTTPBasicAuth(username, password))
 
         if r.status_code == 200:
             self.session['username'] = username
+            self.session['password'] = password
             return True
 
         elif r.status_code == 401:
