@@ -16,48 +16,43 @@ BASEURL = 'http://127.0.0.1:5050/gallery/v1'
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        if 'Login' in request.form:
-            new_login = func.SessionHandler(session).new(request.form['username'], request.form['password'])
-            if new_login:
-
+        if 'login' in request.form:
+            check_auth = func.SessionHandler(session).new(request.form['username'], request.form['password'])
+            if check_auth:
                 return redirect(url_for('index'))
 
             else:
-                print('no cred')
                 return redirect(url_for('login'))
 
-        elif 'Signup' in request.form:
+        elif 'signup' in request.form:
             username = request.form['username']
             password = request.form['password']
+            account_exists = func.SessionHandler(session).new(username, password)
+            if account_exists:
+                print('accounts exists, return to login page')
+                return redirect(url_for('login'))
 
-            # TODO: Imp input and database checking.
-            r = requests.post(f'{BASEURL}/accounts?username={username}&password={password}')
-            session['username'] = username
+            else:
+                print('make new account')
+                r = requests.post(f'{BASEURL}/accounts?username={username}&password={password}')
+                func.SessionHandler(session).new(username, password)
+                return redirect(url_for('index'))
 
-            return redirect(url_for('index'))
-
-    return render_template('login.html')
+    else:
+        return render_template('login.html')
 
 
 @app.route('/logout')
 def logout():
-    # remove the username from the session if it's there
-
-    # session.pop('username', None)
     user = func.SessionHandler(session).close()
-
     return redirect(url_for('index'))
 
 
 @app.route('/')
 def index():
-    if 'username' in session:
-        bla = 'Logged in as %s' % escape(session['username'])
-
-        # r = requests.get('{}/accounts'.format(BASEURL), auth=HTTPBasicAuth('r@r.com', 'r'))
-
-
-        return render_template('index.html', bla=bla)
+    if 'username' in func.SessionHandler(session).get():
+        user = func.SessionHandler(session).get()
+        return render_template('index.html', user=user)
 
     return redirect(url_for('login'))
 
@@ -65,7 +60,7 @@ def index():
 @app.route('/galleries')
 def galleries():
     if 'username' in session:
-        bla = 'Logged in as %s' % escape(session['username'])
+        bla = session['username']
 
         r = requests.get('{}/galleries'.format(BASEURL), auth=HTTPBasicAuth('r@r.com', 'r'))
         response = r.json()
@@ -109,6 +104,23 @@ def new_gallery():
     r = requests.post('{}/galleries?title={}'.format(BASEURL, title), auth=HTTPBasicAuth('r@r.com', 'r'))
 
     return redirect(url_for('galleries'))
+
+
+@app.route('/new_snap', methods=['GET', 'POST'])
+def new_snap():
+    title = request.form['title']
+    gallery_id = request.form['gallery']
+
+    r = requests.post('{}/snaps?title={}'.format(BASEURL, title), auth=HTTPBasicAuth('r@r.com', 'r')).json()
+
+    if 'status' in r and r['status'] == 'success':
+        snaps_id = r['data'][0]['id']
+        g = requests.put(f'{BASEURL}/galleries/{gallery_id}?snaps={snaps_id}', auth=HTTPBasicAuth('r@r.com', 'r'))
+
+        return redirect(f'gallery/{gallery_id}')
+
+    else:
+        return render_template('index.html')
 
 
 @app.route('/upload')

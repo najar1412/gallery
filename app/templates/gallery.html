@@ -8,6 +8,23 @@
 
 <hr>
 
+<label class="custom-file">
+  <input type="file" id="file2" class="custom-file-input">
+  <span class="custom-file-control"></span>
+</label>
+
+<hr>
+
+<form class="form-inline" action="/new_snap" method="POST">
+  <div class="form-group mx-sm-3">
+    <input type="text" name="title" id="title" class="form-control" placeholder="new snap" required autofocus>
+    <input type="hidden" name="gallery" value="{{gallery.0.id}}">
+  </div>
+  <button class="btn btn-primary" type="submit">Post</button>
+</form>
+
+<hr>
+
 {% for snap in gallery.0.snaps %}
 <div class=".container-fluid" style="display:inline-block;">
 
