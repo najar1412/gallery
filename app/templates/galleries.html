@@ -4,7 +4,7 @@
 <hr>
 
 <form class="form-inline" action="/new_gallery" method="POST">
-  <div class="form-group mx-sm-3">
+  <div class="form-group">
     <input type="text" name="title" id="title" class="form-control" placeholder="Gallery Name" required>
   </div>
   <label class="custom-file">
@@ -12,7 +12,7 @@
     <span class="custom-file-control"></span>
 
   </label>
-   &emsp; |  &emsp;
+   &emsp; | &emsp;
   <button class="btn btn-primary" type="submit">Post</button>
 </form>
 
@@ -30,6 +30,7 @@
       <h1 class="card-title">{{gallery.title}}</h1>
     </a>
     <p class="card-text">
+      {{gallery.shareuuid}}
       <button class="btn btn-light btn-sm" type="submit">Lock</button>
       <button class="btn btn-light btn-sm" type="submit">Share</button>
       <button class="btn btn-light btn-sm" type="submit">Edit</button> &emsp; |  &emsp;

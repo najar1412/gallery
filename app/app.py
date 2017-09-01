@@ -7,6 +7,9 @@ from requests.auth import HTTPBasicAuth
 from packages import func
 
 
+# TODO: Needs an annon account for accessing shared galleries.
+# could use model:gallery.private to access?
+
 app = Flask(__name__)
 app.secret_key = 'SPECIALSECRETKEYWHAAA'
 
@@ -59,6 +62,13 @@ def index():
         return render_template('index.html', user=user)
 
     return redirect(url_for('login'))
+
+
+@app.route('/share/<uuid>')
+def share(uuid):
+    # TODO: IMP gallery sharing route
+    gallery = []
+    return render_template('share.html', gallery=gallery)
 
 
 @app.route('/galleries')

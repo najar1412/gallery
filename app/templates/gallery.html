@@ -1,24 +1,46 @@
 {% extends "base.html" %}
 {% block content %}
 
+{{gallery}}
+<hr>
+
+{{gallery.0.shareuuid}}
+
+<hr>
+
 {{gallery.0.title}}
 
 <hr>
 
-<label class="custom-file">
-  <input type="file" id="file2" class="custom-file-input">
-  <span class="custom-file-control"></span>
-</label>
-
-<hr>
 
 <form class="form-inline" action="/new_snap" method="POST">
-  <div class="form-group mx-sm-3">
-    <input type="text" name="title" id="title" class="form-control" placeholder="new snap" required autofocus>
+  <div class="form-group">
+    <input type="text" name="title" id="title" class="form-control" placeholder="new snap" required>
     <input type="hidden" name="gallery" value="{{gallery.0.id}}">
   </div>
+  <label class="custom-file">
+    <input type="file" id="file2" class="custom-file-input">
+    <span class="custom-file-control"></span>
+
+  </label>
+   &emsp; | &emsp;
   <button class="btn btn-primary" type="submit">Post</button>
 </form>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 <hr>
 

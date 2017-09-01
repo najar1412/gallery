@@ -1,5 +1,6 @@
 import sqlite3
 import datetime
+import uuid
 
 from flask import Flask, jsonify
 from flask_restful import reqparse, abort, Api, Resource, fields, marshal_with
@@ -13,6 +14,11 @@ from packages import convert
 # init app and db
 app = Flask(__name__)
 conn = sqlite3.connect('example.db')
+
+# herlper
+def uuid_generator():
+    # TODO: This uuid seems to generate the same uid everytime?
+    return str(uuid.uuid4())
 
 # config
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///example.db'
@@ -56,6 +62,8 @@ class Gallery(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String)
     initdate = db.Column(db.String, default=str(datetime.datetime.utcnow()))
+    private = db.Column(db.Boolean, default=False)
+    shareuuid = db.Column(db.String, default=str(uuid_generator()))
 
     # relationship
     snaps = db.relationship('Snap', secondary=gallery_snaps,
