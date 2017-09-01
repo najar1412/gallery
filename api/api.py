@@ -15,10 +15,6 @@ from packages import convert
 app = Flask(__name__)
 conn = sqlite3.connect('example.db')
 
-# herlper
-def uuid_generator():
-    # TODO: This uuid seems to generate the same uid everytime?
-    return str(uuid.uuid4())
 
 # config
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///example.db'
@@ -63,7 +59,7 @@ class Gallery(db.Model):
     title = db.Column(db.String)
     initdate = db.Column(db.String, default=str(datetime.datetime.utcnow()))
     private = db.Column(db.Boolean, default=False)
-    shareuuid = db.Column(db.String, default=str(uuid_generator()))
+    shareuuid = db.Column(db.String, default='0')
 
     # relationship
     snaps = db.relationship('Snap', secondary=gallery_snaps,
@@ -138,6 +134,14 @@ class Entry(Resource):
         }
 
         return entry, 200
+
+
+class Shareuuid(Resource):
+    def get(self, uuid):
+        print(uuid)
+        raw_gallery = Gallery.query.filter_by(shareuuid=uuid).first()
+        response = resp(status='success', data=convert.jsonify((raw_gallery,)))
+        return response
 
 
 class Accounts(Resource):
@@ -290,10 +294,16 @@ class Galleries(Resource):
 
 class GalleriesL(Resource):
     def get(self):
-        accounts_galleries = Account.query.filter_by(username=auth.username()).first().galleries
+        accounts_galleries = Account.query.filter_by(username=auth.username()).first()
+        if accounts_galleries:
+            accounts_galleries = accounts_galleries.galleries
 
-        response = resp(data=convert.jsonify(accounts_galleries), status='success')
-        return response, 200
+            response = resp(data=convert.jsonify(accounts_galleries), status='success')
+            return response, 200
+
+        else:
+            response = resp(status='failed', error='Returned NoneType')
+            return response, 401
 
 
     @auth.login_required
@@ -305,6 +315,8 @@ class GalleriesL(Resource):
         if args['title'] != None:
             raw_account = Account.query.filter_by(username=auth.username()).first()
             new_gallery = Gallery(title=args['title'])
+            new_gallery.shareuuid = str(uuid.uuid4())
+
             new_gallery.account.append(raw_account)
             db.session.add(new_gallery)
             db.session.commit()
@@ -400,6 +412,7 @@ class SnapsL(Resource):
 
 # routes
 api.add_resource(Entry, '/')
+api.add_resource(Shareuuid, '/shareuuid/<uuid>')
 api.add_resource(Accounts, '/accounts/<id>')
 api.add_resource(AccountsL, '/accounts')
 api.add_resource(Galleries, '/galleries/<id>')

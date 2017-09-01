@@ -30,9 +30,8 @@
       <h1 class="card-title">{{gallery.title}}</h1>
     </a>
     <p class="card-text">
-      {{gallery.shareuuid}}
       <button class="btn btn-light btn-sm" type="submit">Lock</button>
-      <button class="btn btn-light btn-sm" type="submit">Share</button>
+      <a href='/share/{{gallery.shareuuid}}' class="btn btn-light btn-sm" role="button">Share</a>
       <button class="btn btn-light btn-sm" type="submit">Edit</button> &emsp; |  &emsp;
       <button class="btn btn-outline-danger btn-sm" type="submit">Delete</button>
     </p>

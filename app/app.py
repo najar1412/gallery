@@ -67,7 +67,7 @@ def index():
 @app.route('/share/<uuid>')
 def share(uuid):
     # TODO: IMP gallery sharing route
-    gallery = []
+    gallery = requests.get(f'{BASEURL}/shareuuid/{uuid}').json()
     return render_template('share.html', gallery=gallery)
 
 
