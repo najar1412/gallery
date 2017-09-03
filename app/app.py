@@ -6,7 +6,6 @@ from flask import Flask, render_template, request, session, redirect, url_for, e
 import requests
 from requests.auth import HTTPBasicAuth
 
-from config.aws_func import signature
 from config import config
 from packages import func
 
@@ -23,7 +22,6 @@ app.secret_key = config.flask_secret_key
 def upload():
     files_to_upload = request.files.getlist("upload")
     uploaded_files = func.file_handler(app.config['UPLOAD_FOLDER'], files_to_upload)
-    print(uploaded_files)
 
     return redirect(url_for('galleries'))
 

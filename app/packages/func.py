@@ -65,6 +65,7 @@ def upload_to_server(location, file):
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(location, filename))
+
             return filename
 
     else:
@@ -95,7 +96,15 @@ def upload_to_s3(location, file):
 
 def check_file_s3(file):
     # TODO: imp checking of file on s3
-    pass
+    return True
+
+def delete_file_server(location, file):
+    try:
+        os.remove(os.path.join(location, file))
+        return True
+    except:
+        print(f'deleting of {file} failed.')
+        return False
 
 
 def file_handler(location, files):
@@ -109,7 +118,9 @@ def file_handler(location, files):
         if check_file:
             renamed_file = rename_file(location, check_file)
             # upload new file to s3
-            upload_to_s3(location, rename_file(location, renamed_file))
+            upload_to_s3(location, renamed_file)
+            if check_file_s3:
+                delete_file_server(location, renamed_file)
             # return list of new files
             filenames.append(renamed_file)
         else:
