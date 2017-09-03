@@ -1,19 +1,31 @@
 import json
+import os
+import pathlib
 
 from flask import Flask, render_template, request, session, redirect, url_for, escape
 import requests
 from requests.auth import HTTPBasicAuth
 
+from config.aws_func import signature
+from config import config
 from packages import func
 
-
-# TODO: Needs an annon account for accessing shared galleries.
-# could use model:gallery.private to access?
-
+# Flask config
 app = Flask(__name__)
-app.secret_key = 'SPECIALSECRETKEYWHAAA'
+app.config['UPLOAD_FOLDER'] = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    config.flask_upload_folder
+    )
+app.secret_key = config.flask_secret_key
 
-BASEURL = 'http://127.0.0.1:5050/gallery/v1'
+# Flask routes
+@app.route('/upload', methods=['POST', "GET"])
+def upload():
+    files_to_upload = request.files.getlist("upload")
+    uploaded_files = func.file_handler(app.config['UPLOAD_FOLDER'], files_to_upload)
+    print(uploaded_files)
+
+    return redirect(url_for('galleries'))
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -40,7 +52,7 @@ def login():
             else:
                 print('make new account')
                 r = requests.post(
-                    f'{BASEURL}/accounts?username={username}&password={password}'
+                    f'{config.BASEURL}/accounts?username={username}&password={password}'
                     )
                 func.SessionHandler(session).new(username, password)
                 return redirect(url_for('index'))
@@ -67,7 +79,7 @@ def index():
 @app.route('/share/<uuid>')
 def share(uuid):
     # TODO: IMP gallery sharing route
-    gallery = requests.get(f'{BASEURL}/shareuuid/{uuid}').json()
+    gallery = requests.get(f'{config.BASEURL}/shareuuid/{uuid}').json()['data']
     return render_template('share.html', gallery=gallery)
 
 
@@ -77,7 +89,7 @@ def galleries():
 
     if 'username' in user:
         r = requests.get(
-            '{}/galleries'.format(BASEURL),
+            '{}/galleries'.format(config.BASEURL),
             auth=HTTPBasicAuth(user['username'], user['password'])
             )
         response = r.json()
@@ -103,7 +115,7 @@ def gallery(id):
     user = func.SessionHandler(session).get()
     if 'username' in user:
         response = requests.get(
-            '{}/galleries/{}'.format(BASEURL, id),
+            '{}/galleries/{}'.format(config.BASEURL, id),
             auth=HTTPBasicAuth(user['username'], user['password'])
             ).json()
         if response['status']:
@@ -126,9 +138,33 @@ def new_gallery():
     title = request.form['title']
 
     r = requests.post(
-        '{}/galleries?title={}'.format(BASEURL, title),
+        '{}/galleries?title={}'.format(config.BASEURL, title),
         auth=HTTPBasicAuth(user['username'], user['password'])
         )
+
+    return redirect(url_for('galleries'))
+
+
+@app.route('/edit_gallery/<int:id>', methods=['GET', 'POST'])
+def edit_gallery(id):
+    user = func.SessionHandler(session).get()
+    args = dict(request.form)
+
+    if 'private' in args:
+        requests.put(
+            '{}/galleries/{}?private=string'.format(config.BASEURL, id),
+            auth=HTTPBasicAuth(user['username'], user['password'])
+            )
+
+    elif 'edit' in args:
+        print('edit clickd')
+
+    elif 'delete' in args:
+        requests.delete(
+            '{}/galleries/{}'.format(config.BASEURL, id),
+            auth=HTTPBasicAuth(user['username'], user['password'])
+            )
+        print('delete clciked')
 
     return redirect(url_for('galleries'))
 
@@ -140,14 +176,14 @@ def new_snap():
     gallery_id = request.form['gallery']
 
     post_snap = requests.post(
-        '{}/snaps?title={}'.format(BASEURL, title),
+        '{}/snaps?title={}'.format(config.BASEURL, title),
         auth=HTTPBasicAuth(user['username'], user['password'])
         ).json()
 
     if 'status' in post_snap and post_snap['status'] == 'success':
         snaps_id = post_snap['data'][0]['id']
         requests.put(
-            f'{BASEURL}/galleries/{gallery_id}?snaps={snaps_id}',
+            f'{config.BASEURL}/galleries/{gallery_id}?snaps={snaps_id}',
             auth=HTTPBasicAuth(user['username'], user['password'])
             )
 

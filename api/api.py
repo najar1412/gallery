@@ -10,6 +10,10 @@ from flask_httpauth import HTTPBasicAuth
 from packages import convert
 
 
+# TODO: Deleting a gallery should delete all containing snaps? Or no?
+# currently the snaps are just left dangerling once a gallery is deleted.
+
+
 # Config
 # init app and db
 app = Flask(__name__)
@@ -58,7 +62,7 @@ class Gallery(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String)
     initdate = db.Column(db.String, default=str(datetime.datetime.utcnow()))
-    private = db.Column(db.Boolean, default=False)
+    private = db.Column(db.Boolean, default=True)
     shareuuid = db.Column(db.String, default='0')
 
     # relationship
@@ -87,6 +91,7 @@ class Snap(db.Model):
 
 
 db.create_all()
+
 
 # helpers
 def resp(status=None, data=None, link=None, error=None, message=None):
@@ -126,6 +131,7 @@ def verify(username, password):
 
 # API resources
 class Entry(Resource):
+    @auth.login_required
     def get(self):
         entry = {
             'name': 'gallery api',
@@ -138,10 +144,15 @@ class Entry(Resource):
 
 class Shareuuid(Resource):
     def get(self, uuid):
-        print(uuid)
         raw_gallery = Gallery.query.filter_by(shareuuid=uuid).first()
-        response = resp(status='success', data=convert.jsonify((raw_gallery,)))
-        return response
+
+        if raw_gallery.private:
+            response = resp(status='failed', error='this gallery is private')
+            return response
+
+        else:
+            response = resp(status='success', data=convert.jsonify((raw_gallery,))[0]['snaps'])
+            return response
 
 
 class Accounts(Resource):
@@ -254,6 +265,7 @@ class Galleries(Resource):
     def put(self, id):
         parser = reqparse.RequestParser()
         parser.add_argument('snaps', type=str, help='help text')
+        parser.add_argument('private', type=str, help='help text')
         args = parser.parse_args()
 
         get_gallery = Gallery.query.filter_by(id=id).first()
@@ -268,6 +280,15 @@ class Galleries(Resource):
 
                 else:
                     return resp(error='no such snap id')
+
+            elif args['private']:
+                if get_gallery.private:
+                    get_gallery.private = False
+                    db.session.commit()
+                else:
+                    get_gallery.private = True
+                    db.session.commit()
+
             else:
                 pass
 
