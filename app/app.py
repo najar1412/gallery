@@ -137,7 +137,7 @@ def gallery(id):
         else:
             gallery = []
 
-        return render_template('gallery.html', gallery=gallery, user=user)
+        return render_template('gallery.html', gallery=gallery, user=user, gallery_id=id)
 
     else:
         return redirect(url_for('login'))
@@ -161,7 +161,7 @@ def new_gallery():
         for x in uploaded_files:
 
             post_snap = requests.post(
-                '{}/snaps?title=None&name={}'.format(config.BASEURL, x),
+                '{}/snaps?name={}'.format(config.BASEURL, x),
                 auth=HTTPBasicAuth(user['username'], user['password'])
                 ).json()
 
@@ -204,25 +204,25 @@ def edit_gallery(id):
 @app.route('/new_snap', methods=['GET', 'POST'])
 def new_snap():
     user = func.SessionHandler(session).get()
-    title = request.form['title']
+    files_to_upload = request.files.getlist("upload")
     gallery_id = request.form['gallery']
 
-    post_snap = requests.post(
-        '{}/snaps?title={}'.format(config.BASEURL, title),
-        auth=HTTPBasicAuth(user['username'], user['password'])
-        ).json()
+    uploaded_files = func.file_handler(app.config['UPLOAD_FOLDER'], files_to_upload)
 
-    if 'status' in post_snap and post_snap['status'] == 'success':
-        snaps_id = post_snap['data'][0]['id']
-        requests.put(
-            f'{config.BASEURL}/galleries/{gallery_id}?snaps={snaps_id}',
+    for x in uploaded_files:
+        post_snap = requests.post(
+            '{}/snaps?name={}'.format(config.BASEURL, x),
             auth=HTTPBasicAuth(user['username'], user['password'])
-            )
+            ).json()
 
-        return redirect(f'gallery/{gallery_id}')
+        if 'status' in post_snap and post_snap['status'] == 'success':
+            snaps_id = post_snap['data'][0]['id']
+            requests.put(
+                f'{config.BASEURL}/galleries/{gallery_id}?snaps={snaps_id}',
+                auth=HTTPBasicAuth(user['username'], user['password'])
+                )
 
-    else:
-        return render_template('index.html', user=user)
+    return redirect(f'gallery/{gallery_id}')
 
 
 @app.route('/settings')

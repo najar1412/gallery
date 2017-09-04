@@ -79,13 +79,11 @@ class Gallery(db.Model):
 
 class Snap(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String)
     initdate = db.Column(db.String, default=str(datetime.datetime.utcnow()))
     name = db.Column(db.String)
 
 
-    def __init__(self, title, name):
-        self.title = title
+    def __init__(self, name):
         self.name = name
 
     def __repr__(self):
@@ -409,12 +407,11 @@ class SnapsL(Resource):
     @auth.login_required
     def post(self):
         parser = reqparse.RequestParser()
-        parser.add_argument('title', type=str, help='helper text')
         parser.add_argument('name', type=str, help='helper text')
         args = parser.parse_args()
 
-        if args['title'] != None:
-            new_snap = Snap(title=args['title'], name=args['name'])
+        if args['name'] != None:
+            new_snap = Snap(name=args['name'])
             db.session.add(new_snap)
             db.session.commit()
 
