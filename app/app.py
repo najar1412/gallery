@@ -17,6 +17,7 @@ app.config['UPLOAD_FOLDER'] = os.path.join(
     )
 app.secret_key = config.flask_secret_key
 
+
 # flask errors
 @app.errorhandler(404)
 def page_not_found(e):
@@ -86,7 +87,7 @@ def share(uuid):
     gallery = requests.get(f'{config.BASEURL}/shareuuid/{uuid}').json()
 
     if 'status' in gallery and gallery['status'] == 'success':
-        gallery = gallery['data']
+        gallery = [snap for snap in gallery['data'] if snap['private'] != True]
 
         return render_template('share.html', gallery=gallery)
 
@@ -221,6 +222,31 @@ def new_snap():
                 f'{config.BASEURL}/galleries/{gallery_id}?snaps={snaps_id}',
                 auth=HTTPBasicAuth(user['username'], user['password'])
                 )
+
+    return redirect(f'gallery/{gallery_id}')
+
+
+@app.route('/edit_snap/<int:id>', methods=['GET', 'POST'])
+def edit_snap(id):
+    user = func.SessionHandler(session).get()
+    args = dict(request.form)
+    gallery_id = args['gallery'][0]
+
+    if 'private' in args:
+        requests.put(
+            '{}/snaps/{}?private=string'.format(config.BASEURL, id),
+            auth=HTTPBasicAuth(user['username'], user['password'])
+            )
+
+    elif 'transform' in args:
+        print('transform clickd')
+
+    elif 'delete' in args:
+        requests.delete(
+            '{}/snaps/{}'.format(config.BASEURL, id),
+            auth=HTTPBasicAuth(user['username'], user['password'])
+            )
+        print('delete clciked')
 
     return redirect(f'gallery/{gallery_id}')
 

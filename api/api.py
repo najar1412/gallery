@@ -81,6 +81,7 @@ class Snap(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     initdate = db.Column(db.String, default=str(datetime.datetime.utcnow()))
     name = db.Column(db.String)
+    private = db.Column(db.Boolean, default=True)
 
 
     def __init__(self, name):
@@ -370,12 +371,19 @@ class Snaps(Resource):
     @auth.login_required
     def put(self, id):
         parser = reqparse.RequestParser()
+        parser.add_argument('private', type=str, help='help text')
         args = parser.parse_args()
 
         get_snap = Snap.query.filter_by(id=id).first()
 
         if get_snap != None:
-            pass
+            if args['private']:
+                if get_snap.private:
+                    get_snap.private = False
+                    db.session.commit()
+                else:
+                    get_snap.private = True
+                    db.session.commit()
 
         else:
             return resp(error='no such snap id')
