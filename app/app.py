@@ -2,7 +2,7 @@ import json
 import os
 import pathlib
 
-from flask import Flask, render_template, request, session, redirect, url_for, escape
+from flask import Flask, render_template, request, session, redirect, url_for, abort
 import requests
 from requests.auth import HTTPBasicAuth
 
@@ -16,6 +16,12 @@ app.config['UPLOAD_FOLDER'] = os.path.join(
     config.flask_upload_folder
     )
 app.secret_key = config.flask_secret_key
+
+# flask errors
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('/error/404.html'), 404
+
 
 # Flask routes
 @app.route('/upload', methods=['POST', "GET"])
@@ -85,7 +91,7 @@ def share(uuid):
         return render_template('share.html', gallery=gallery)
 
     else:
-        return render_template('share.html', gallery=gallery)
+        return abort(404)
 
 
 @app.route('/galleries')

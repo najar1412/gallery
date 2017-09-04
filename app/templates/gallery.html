@@ -1,17 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 
-{{gallery}}
 <hr>
-
-{{gallery.0.shareuuid}}
-
-<hr>
-
-{{gallery.0.title}}
-
-<hr>
-
 
 <form class="form-inline" action="/new_snap" method="POST">
   <div class="form-group">
@@ -27,23 +17,12 @@
   <button class="btn btn-primary" type="submit">Post</button>
 </form>
 
-
 <hr>
 
 {% for snap in gallery.0.snaps %}
-<div class=".container-fluid" style="display:inline-block;">
-
-<div class="card border-light mb-3" style="max-width: 20rem; margin:0;">
-  <div class="card-header">Header</div>
-  <div class="card-body">
-    <h4 class="card-title">Light card title</h4>
-    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+  <div class=".container-fluid" style="display:inline-block;">
+    <img src="https://s3.amazonaws.com/gallerystore/{{snap.name}}" alt="some_text">
   </div>
-</div>
-
-</div>
-
 {% endfor %}
-
 
 {% endblock %}

@@ -1,1 +1,8 @@
+<hr>
 {{gallery}}
+<hr>
+{% for snap in gallery %}
+  <div class=".container-fluid" style="display:inline-block;">
+    <img src="https://s3.amazonaws.com/gallerystore/{{snap.name}}" alt="some_text">
+  </div>
+{% endfor %}
