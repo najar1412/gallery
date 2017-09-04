@@ -81,10 +81,12 @@ class Snap(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String)
     initdate = db.Column(db.String, default=str(datetime.datetime.utcnow()))
+    name = db.Column(db.String)
 
 
-    def __init__(self, title):
+    def __init__(self, title, name):
         self.title = title
+        self.name = name
 
     def __repr__(self):
         return '<Snap {}>'.format(self.id)
@@ -408,12 +410,11 @@ class SnapsL(Resource):
     def post(self):
         parser = reqparse.RequestParser()
         parser.add_argument('title', type=str, help='helper text')
+        parser.add_argument('name', type=str, help='helper text')
         args = parser.parse_args()
 
         if args['title'] != None:
-            # raw_gallery = Gallery.query.filter_by(id=id).first()
-            new_snap = Snap(title=args['title'])
-            # new_snap.galleries.append(raw_gallery)
+            new_snap = Snap(title=args['title'], name=args['name'])
             db.session.add(new_snap)
             db.session.commit()
 

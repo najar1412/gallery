@@ -10,12 +10,12 @@
 
 <hr>
 
-<form class="form-inline" action="/new_gallery" method="POST">
+<form class="form-inline" action="/new_gallery" method="POST" enctype="multipart/form-data">
   <div class="form-group">
     <input type="text" name="title" id="title" class="form-control" placeholder="Gallery Name" required>
   </div>
   <label class="custom-file">
-    <input type="file" id="file2" class="custom-file-input">
+    <input type="file" name="upload" class="custom-file-input" multiple>
     <span class="custom-file-control"></span>
 
   </label>

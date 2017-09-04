@@ -77,8 +77,15 @@ def index():
 @app.route('/share/<uuid>')
 def share(uuid):
     # TODO: IMP gallery sharing route
-    gallery = requests.get(f'{config.BASEURL}/shareuuid/{uuid}').json()['data']
-    return render_template('share.html', gallery=gallery)
+    gallery = requests.get(f'{config.BASEURL}/shareuuid/{uuid}').json()
+
+    if 'status' in gallery and gallery['status'] == 'success':
+        gallery = gallery['data']
+
+        return render_template('share.html', gallery=gallery)
+
+    else:
+        return render_template('share.html', gallery=gallery)
 
 
 @app.route('/galleries')
@@ -134,11 +141,32 @@ def gallery(id):
 def new_gallery():
     user = func.SessionHandler(session).get()
     title = request.form['title']
+    files_to_upload = request.files.getlist("upload")
+
+    uploaded_files = func.file_handler(app.config['UPLOAD_FOLDER'], files_to_upload)
 
     r = requests.post(
         '{}/galleries?title={}'.format(config.BASEURL, title),
         auth=HTTPBasicAuth(user['username'], user['password'])
         )
+
+    if r.json()['status'] == 'success':
+        gallery_id = r.json()['data'][0]['id']
+        for x in uploaded_files:
+
+            post_snap = requests.post(
+                '{}/snaps?title=None&name={}'.format(config.BASEURL, x),
+                auth=HTTPBasicAuth(user['username'], user['password'])
+                ).json()
+
+            if 'status' in post_snap and post_snap['status'] == 'success':
+                snaps_id = post_snap['data'][0]['id']
+                requests.put(
+                    f'{config.BASEURL}/galleries/{gallery_id}?snaps={snaps_id}',
+                    auth=HTTPBasicAuth(user['username'], user['password'])
+                    )
+
+        return redirect(f'gallery/{gallery_id}')
 
     return redirect(url_for('galleries'))
 
