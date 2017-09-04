@@ -1,23 +1,22 @@
 {% extends "base.html" %}
 {% block content %}
 
+<div class="alert alert-secondary" role="alert">
+  <form class="form-inline" action="/new_gallery" method="POST" enctype="multipart/form-data">
+    Create New Gallery &emsp;
+    <div class="form-group">
+      <input type="text" name="title" id="title" class="form-control" placeholder="Gallery Name" required>
+    </div>
+    <label class="custom-file">
+      <input type="file" name="upload" class="custom-file-input" multiple>
+      <span class="custom-file-control"></span>
 
-<hr>
+    </label>
+     &emsp; | &emsp;
+    <button class="btn btn-primary" type="submit">Post</button>
+  </form>
+</div>
 
-<form class="form-inline" action="/new_gallery" method="POST" enctype="multipart/form-data">
-  <div class="form-group">
-    <input type="text" name="title" id="title" class="form-control" placeholder="Gallery Name" required>
-  </div>
-  <label class="custom-file">
-    <input type="file" name="upload" class="custom-file-input" multiple>
-    <span class="custom-file-control"></span>
-
-  </label>
-   &emsp; | &emsp;
-  <button class="btn btn-primary" type="submit">Post</button>
-</form>
-
-<hr>
 
 {% for gallery in galleries %}
 
@@ -36,7 +35,7 @@
           <button class="btn btn-danger btn-sm" name='private' type="submit">Private</button>
         {% else %}
           <button class="btn btn-success btn-sm" name='private' type="submit">Public</button>
-          <a href='/share/{{gallery.shareuuid}}' class="btn btn-light btn-sm" role="button">Share</a>
+          <a href='/share/{{gallery.shareuuid}}' class="btn btn-light btn-sm" role="button" target="_blank">Share</a>
         {% endif %}
         <button class="btn btn-light btn-sm" name='edit' type="submit">Edit</button> &emsp; |  &emsp;
         <button class="btn btn-outline-danger btn-sm" name='delete' type="submit">Delete</button>

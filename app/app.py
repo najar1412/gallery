@@ -25,14 +25,6 @@ def page_not_found(e):
 
 
 # Flask routes
-@app.route('/upload', methods=['POST', "GET"])
-def upload():
-    files_to_upload = request.files.getlist("upload")
-    uploaded_files = func.file_handler(app.config['UPLOAD_FOLDER'], files_to_upload)
-
-    return redirect(url_for('galleries'))
-
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -146,6 +138,7 @@ def gallery(id):
 
 @app.route('/new_gallery', methods=['GET', 'POST'])
 def new_gallery():
+    # TODO: Creating a gallery without snaps produces error.
     user = func.SessionHandler(session).get()
     title = request.form['title']
     files_to_upload = request.files.getlist("upload")
@@ -255,6 +248,30 @@ def edit_snap(id):
 def settings():
     user = func.SessionHandler(session).get()
     return render_template('settings.html', user=user)
+
+
+@app.route('/privacy')
+def privacy():
+    user = func.SessionHandler(session).get()
+    return render_template('privacy.html', user=user)
+
+
+@app.route('/terms')
+def terms():
+    user = func.SessionHandler(session).get()
+    return render_template('terms.html', user=user)
+
+
+@app.route('/contact')
+def contact():
+    user = func.SessionHandler(session).get()
+    return render_template('contact.html', user=user)
+
+
+@app.route('/about')
+def about():
+    user = func.SessionHandler(session).get()
+    return render_template('about.html')
 
 
 if __name__ == '__main__':
