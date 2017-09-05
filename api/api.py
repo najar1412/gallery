@@ -10,15 +10,18 @@ from flask_httpauth import HTTPBasicAuth
 from packages import convert
 
 
-# TODO: Deleting a gallery should delete all containing snaps? Or no?
-# currently the snaps are just left dangerling once a gallery is deleted.
-
+# TODO: figure out a standardised way to process images. resolution, size etc.
+# TODO: imp a way to add already uploaded images to already avaliable galleries
+# TODO: look into building a basic color corrector/image manipulator on the
+# frontend. JS?
+# TODO: look into building 'gallery templates' for when a gallery is shared.
+# TODO: IMP postgres
+# TODO: IMP 'dev mode' disabling aws things, uploading localling instead.
 
 # Config
 # init app and db
 app = Flask(__name__)
 conn = sqlite3.connect('example.db')
-
 
 # config
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///example.db'
