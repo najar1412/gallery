@@ -9,6 +9,9 @@ from requests.auth import HTTPBasicAuth
 from config import config
 from packages import func
 
+
+# TODO: UPloading anything other than a jpg is an error.
+
 # Flask config
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = os.path.join(
@@ -68,6 +71,15 @@ def logout():
 def index():
     user = func.SessionHandler(session).get()
     if 'username' in user:
+        r = requests.get(
+            '{}/accounts'.format(config.BASEURL),
+            auth=HTTPBasicAuth(user['username'], user['password'])
+            )
+        response = r.json()
+
+        if 'status' in response and response['status'] == 'success':
+            snaps = response['data'][0]['snaps']
+
         return render_template('index.html', user=user)
 
     return redirect(url_for('login'))
@@ -90,7 +102,6 @@ def share(uuid):
 @app.route('/galleries')
 def galleries():
     user = func.SessionHandler(session).get()
-
     if 'username' in user:
         r = requests.get(
             '{}/galleries'.format(config.BASEURL),
@@ -109,6 +120,32 @@ def galleries():
             galleries = []
 
         return render_template('galleries.html', galleries=galleries, user=user)
+
+    else:
+        return redirect(url_for('login'))
+
+
+@app.route('/snaps')
+def snaps():
+    user = func.SessionHandler(session).get()
+    if 'username' in user:
+        r = requests.get(
+            '{}/snaps'.format(config.BASEURL),
+            auth=HTTPBasicAuth(user['username'], user['password'])
+            )
+        response = r.json()
+
+        if response['status']:
+            if response['status'] == 'success':
+                snaps = response['data']
+
+            else:
+                snaps = []
+
+        else:
+            snaps = []
+
+        return render_template('snaps.html', snaps=snaps, user=user)
 
     else:
         return redirect(url_for('login'))
@@ -138,19 +175,23 @@ def gallery(id):
 
 @app.route('/new_gallery', methods=['GET', 'POST'])
 def new_gallery():
-    # TODO: Creating a gallery without snaps produces error.
     user = func.SessionHandler(session).get()
     title = request.form['title']
     files_to_upload = request.files.getlist("upload")
 
-    uploaded_files = func.file_handler(app.config['UPLOAD_FOLDER'], files_to_upload)
+    # check if there are any files in the request.
+    if len(files_to_upload) == 1 and files_to_upload[0].__dict__['filename'] == '':
+        uploaded_files = False
+    else:
+        uploaded_files = func.file_handler(app.config['UPLOAD_FOLDER'], files_to_upload)
+        print(uploaded_files)
 
     r = requests.post(
         '{}/galleries?title={}'.format(config.BASEURL, title),
         auth=HTTPBasicAuth(user['username'], user['password'])
         )
 
-    if r.json()['status'] == 'success':
+    if uploaded_files and r.json()['status'] == 'success':
         gallery_id = r.json()['data'][0]['id']
         for x in uploaded_files:
 
@@ -190,7 +231,6 @@ def edit_gallery(id):
             '{}/galleries/{}'.format(config.BASEURL, id),
             auth=HTTPBasicAuth(user['username'], user['password'])
             )
-        print('delete clciked')
 
     return redirect(url_for('galleries'))
 
@@ -199,31 +239,51 @@ def edit_gallery(id):
 def new_snap():
     user = func.SessionHandler(session).get()
     files_to_upload = request.files.getlist("upload")
-    gallery_id = request.form['gallery']
 
-    uploaded_files = func.file_handler(app.config['UPLOAD_FOLDER'], files_to_upload)
+    try:
+        print('try')
+        gallery_id = request.form['gallery']
+    except:
+        print('except')
+        gallery_id = None
 
-    for x in uploaded_files:
-        post_snap = requests.post(
-            '{}/snaps?name={}'.format(config.BASEURL, x),
-            auth=HTTPBasicAuth(user['username'], user['password'])
-            ).json()
+    if len(files_to_upload) == 1 and files_to_upload[0].__dict__['filename'] == '':
+        uploaded_files = False
+    else:
+        uploaded_files = func.file_handler(app.config['UPLOAD_FOLDER'], files_to_upload)
+        print(uploaded_files)
 
-        if 'status' in post_snap and post_snap['status'] == 'success':
-            snaps_id = post_snap['data'][0]['id']
-            requests.put(
-                f'{config.BASEURL}/galleries/{gallery_id}?snaps={snaps_id}',
+    if files_to_upload:
+        for x in uploaded_files:
+            post_snap = requests.post(
+                '{}/snaps?name={}'.format(config.BASEURL, x),
                 auth=HTTPBasicAuth(user['username'], user['password'])
-                )
+                ).json()
 
-    return redirect(f'gallery/{gallery_id}')
+            if 'status' in post_snap and post_snap['status'] == 'success':
+                snaps_id = post_snap['data'][0]['id']
+                requests.put(
+                    f'{config.BASEURL}/galleries/{gallery_id}?snaps={snaps_id}',
+                    auth=HTTPBasicAuth(user['username'], user['password'])
+                    )
+
+    if gallery_id:
+        return redirect(f'gallery/{gallery_id}')
+    else:
+        return redirect('snaps')
 
 
 @app.route('/edit_snap/<int:id>', methods=['GET', 'POST'])
 def edit_snap(id):
     user = func.SessionHandler(session).get()
     args = dict(request.form)
-    gallery_id = args['gallery'][0]
+    # if try passes request was from a gallery
+    # except means request was from a snap
+    try:
+        gallery_id = args['gallery'][0]
+    except:
+        print('its a none')
+        gallery_id = None
 
     if 'private' in args:
         requests.put(
@@ -235,13 +295,33 @@ def edit_snap(id):
         print('transform clickd')
 
     elif 'delete' in args:
-        requests.delete(
-            '{}/snaps/{}'.format(config.BASEURL, id),
-            auth=HTTPBasicAuth(user['username'], user['password'])
-            )
-        print('delete clciked')
+        print('deleting.................')
+        snap = requests.get('{}/snaps/{}'.format(config.BASEURL, id),
+        auth=HTTPBasicAuth(user['username'], user['password'])
+        ).json()
 
-    return redirect(f'gallery/{gallery_id}')
+        test_snap = requests.get('{}/accounts'.format(config.BASEURL),
+        auth=HTTPBasicAuth(user['username'], user['password'])
+        ).json()
+
+        print(test_snap)
+
+        if 'status' in snap and snap['status'] == 'success':
+            snap_name = snap['data'][0]['name']
+
+            delete_from_s3 = func.delete_file_s3(snap_name)
+            if delete_from_s3:
+                requests.delete(
+                    '{}/snaps/{}'.format(config.BASEURL, id),
+                    auth=HTTPBasicAuth(user['username'], user['password'])
+                    )
+            else:
+                print('Deleting {} from s3 failed.')
+
+    if gallery_id:
+        return redirect(f'gallery/{gallery_id}')
+    else:
+        return redirect('snaps')
 
 
 @app.route('/settings')
@@ -271,7 +351,8 @@ def contact():
 @app.route('/about')
 def about():
     user = func.SessionHandler(session).get()
-    return render_template('about.html')
+    return render_template('about.html', user=user)
+
 
 
 if __name__ == '__main__':

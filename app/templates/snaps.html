@@ -8,14 +8,14 @@
       <input type="file" name="upload" class="custom-file-input" multiple>
       <span class="custom-file-control"></span>
     </label>
-    <input type="hidden" name="gallery" value="{{gallery_id}}">
      &emsp; | &emsp;
     <button class="btn btn-primary" type="submit">Post</button>
   </form>
 </div>
 
+
 <div class=".container-fluid">
-{% for snap in gallery.0.snaps %}
+{% for snap in snaps %}
 
 <div class="card" style="width: 20rem; margin-top:2px; margin-bottom:2px;background-image: url('https://s3.amazonaws.com/gallerystore/{{snap.name}}'); background-position: center; display:inline-block;">
   <div class="card-body">
@@ -23,7 +23,6 @@
     <h6 class="card-subtitle mb-2 text-muted">&emsp;</h6>
     <p class="card-text">&emsp;</p>
     <form action="/edit_snap/{{snap.id}}" method="POST">
-      <input type="hidden" name="gallery" value="{{gallery_id}}">
       {% if snap.private == True %}
         <button class="btn btn-danger btn-sm" name='private' type="submit">Private</button>
       {% else %}
@@ -38,9 +37,5 @@
 {% endfor %}
 
   </div>
-
-
-
-
 
 {% endblock %}

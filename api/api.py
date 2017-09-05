@@ -32,6 +32,11 @@ account_galleries = db.Table('account_galleries',
     db.Column('gallery_id', db.Integer, db.ForeignKey('gallery.id'))
 )
 
+account_snaps = db.Table('account_snaps',
+    db.Column('account_id', db.Integer, db.ForeignKey('account.id')),
+    db.Column('snap_id', db.Integer, db.ForeignKey('snap.id'))
+)
+
 gallery_snaps = db.Table('gallery_snaps',
     db.Column('gallery_id', db.Integer, db.ForeignKey('gallery.id')),
     db.Column('snap_id', db.Integer, db.ForeignKey('snap.id'))
@@ -47,6 +52,9 @@ class Account(db.Model):
     # relationships
     # comments
     galleries = db.relationship('Gallery', secondary=account_galleries,
+        backref=db.backref('account', lazy='dynamic'))
+
+    snaps = db.relationship('Snap', secondary=account_snaps,
         backref=db.backref('account', lazy='dynamic'))
 
 
@@ -161,7 +169,7 @@ class Accounts(Resource):
     def get(self, id):
         raw_account = Account.query.filter_by(id=id).first()
 
-        response = resp(status='success', data=convert.jsonify((raw_account,)))
+        response = resp(status='success', data=convert.jsonify(raw_account))
         return response, 200
 
 
@@ -215,9 +223,9 @@ class Accounts(Resource):
 class AccountsL(Resource):
     @auth.login_required
     def get(self):
-        new_accounts = Account.query.all()
+        raw_account = Account.query.filter_by(username=auth.username()).first()
 
-        response = resp(data=convert.jsonify(new_accounts), status='success')
+        response = resp(data=convert.jsonify((raw_account,)), status='success')
         return response, 200
 
 
@@ -390,16 +398,17 @@ class Snaps(Resource):
 
     @auth.login_required
     def delete(self, id):
-        get_snap = Snap.query.filter_by(id=id).first()
-        get_account = Account.query.filter_by(username=auth.username()).first()
+        # TODO: delete physical file from s3 also
 
-        if get_snap in get_account.galleries:
-            db.session.delete(get_snap)
-            db.session.commit()
+        get_account = Account.query.filter_by(username=auth.username()).first().snaps
+        for snap in get_account:
+            if snap.id == int(id):
+                db.session.delete(snap)
+                db.session.commit()
 
-            response = resp(status='success', message='snap successfully deleted')
+                response = resp(status='success', message='snap successfully deleted')
 
-            return response, 201
+                return response, 201
 
         else:
             return resp(message='snap can only be deleted by the account that posted it')
@@ -407,10 +416,16 @@ class Snaps(Resource):
 
 class SnapsL(Resource):
     def get(self):
-        raw_snaps = Snap.query.all()
+        accounts_snaps = Account.query.filter_by(username=auth.username()).first()
+        if accounts_snaps:
+            accounts_snaps = accounts_snaps.snaps
 
-        response = resp(data=convert.jsonify(raw_snaps), status='success')
-        return response, 200
+            response = resp(data=convert.jsonify(accounts_snaps), status='success')
+            return response, 200
+
+        else:
+            response = resp(status='failed', error='Returned NoneType')
+            return response, 401
 
     @auth.login_required
     def post(self):
@@ -419,7 +434,10 @@ class SnapsL(Resource):
         args = parser.parse_args()
 
         if args['name'] != None:
+            raw_account = Account.query.filter_by(username=auth.username()).first()
             new_snap = Snap(name=args['name'])
+
+            new_snap.account.append(raw_account)
             db.session.add(new_snap)
             db.session.commit()
 

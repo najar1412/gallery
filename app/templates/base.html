@@ -23,6 +23,9 @@
             <a class="nav-link" href="/galleries">Galleries <span class="sr-only">(current)</span></a>
           </li>
           <li class="nav-item">
+            <a class="nav-link" href="/snaps">Snaps</a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link" href="/settings">Settings</a>
           </li>
         </ul>
@@ -30,12 +33,6 @@
           <li>Logged in as {{user.username}}</li>
           <li><a style="color:white;" href="/logout">Log out</a></li>
         </dd>
-        <!--
-        <form class="form-inline mt-2 mt-md-0">
-          <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">
-          <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-        </form>
-        !-->
       </div>
     </nav>
 
@@ -43,21 +40,21 @@
 
     <div style="margin:10px;">
       {% block content %}
+
+
       {% endblock %}
     </div>
-
-  <hr>
-
+<hr>
     <footer class="footer text-muted">
       <small>
-    <p style="height:20px"></p>
+    <p style="height:5px"></p>
   <div class="container">
 
     <ul class="list-inline">
-      <li class="list-inline-item"><a href="/terms">Terms</a></li>
-      <li class="list-inline-item"><a href="/privacy">Privacy</a></li>
-      <li class="list-inline-item"><a href="/contact">Contact</a></li>
-      <li class="list-inline-item"><a href="/about">About</a></li>
+      <li class="list-inline-item"><a href="/terms" style="color:black;">Terms</a></li>
+      <li class="list-inline-item"><a href="/privacy" style="color:black;">Privacy</a></li>
+      <li class="list-inline-item"><a href="/contact" style="color:black;">Contact</a></li>
+      <li class="list-inline-item"><a href="/about" style="color:black;">About</a></li>
     </ul>
 
     <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed eget quam eu risus mattis pharetra. Sed ullamcorper dolor non pellentesque finibus. Quisque ultrices massa eu leo fringilla hendrerit. Aenean cursus felis leo. Nulla vel nunc nulla. Praesent tincidunt purus vitae massa ornare facilisis. Cras ut ullamcorper enim..</p>

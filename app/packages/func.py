@@ -98,6 +98,7 @@ def check_file_s3(file):
     # TODO: imp checking of file on s3
     return True
 
+
 def delete_file_server(location, file):
     try:
         os.remove(os.path.join(location, file))
@@ -105,6 +106,18 @@ def delete_file_server(location, file):
     except:
         print(f'deleting of {file} failed.')
         return False
+
+
+def delete_file_s3(file):
+    s3 = boto3.client(
+        's3',
+        aws_access_key_id=config.aws_access_id,
+        aws_secret_access_key=config.aws_secret_key,
+    )
+
+    s3.delete_object(Bucket=config.aws_bucket, Key=file)
+
+    return True
 
 
 def file_handler(location, files):
