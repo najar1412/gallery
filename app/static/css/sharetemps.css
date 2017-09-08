@@ -23,3 +23,34 @@
   height: auto;
   position:relative;
 }
+
+
+
+
+.col-lg-3{
+    width: 25%;
+    min-width: 230px;
+    float: left;
+    position: relative;
+    min-height: 1px;
+    padding-left: 15px;
+    padding-right: 15px;
+    background-color: #aaa;
+    text-align: center;
+}
+.col-lg-3 img {
+    max-width: 100%;
+}
+.img-container {
+    position: relative;
+}
+.positioning{
+  position: absolute;
+  right: 15px;
+  bottom: 22px;
+  background-color: red;
+  color: white;
+  padding: 4px;
+  font-size: 17px;
+  line-height: 18px;
+}
