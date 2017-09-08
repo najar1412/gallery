@@ -1,4 +1,4 @@
-BASEURL = ''
+BASEURL = 'http://localhost:5050/gallery/v1'
 
 flask_secret_key = ''
 flask_upload_folder = ''

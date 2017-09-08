@@ -21,6 +21,11 @@ app.config['UPLOAD_FOLDER'] = os.path.join(
 app.secret_key = config.flask_secret_key
 
 
+@app.route('/temptest')
+def temptest():
+    return render_template('temptest.html')
+
+
 # flask errors
 @app.errorhandler(404)
 def page_not_found(e):
