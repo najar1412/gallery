@@ -20,6 +20,15 @@ app.config['UPLOAD_FOLDER'] = os.path.join(
     )
 app.secret_key = config.flask_secret_key
 
+# build themes
+# default theme
+test = requests.get('{}/themes'.format(config.BASEURL))
+if test.status_code == 200:
+    pass
+else:
+    requests.post(
+        '{}/themes?name=default'.format(config.BASEURL))
+
 
 @app.route('/temptest')
 def temptest():
@@ -97,18 +106,20 @@ def share(uuid):
 
     if 'status' in gallery and gallery['status'] == 'success':
         snaps = [snap for snap in gallery['data']['snaps'] if snap['private'] != True]
-
-        # TODO: IMP theme names into database.
-
+        theme_name = gallery['data']['theme'][0]['name']
         theme_exists = func.check_file_server(os.path.join(
             os.path.dirname(os.path.abspath(__file__)),
             'templates', 'theme'
-            ), f"{gallery['data']['theme']}.html")
+            ), f"{theme_name}.html")
 
         if theme_exists:
-            return render_template('theme/{}.html'.format(gallery['data']['theme']), gallery=snaps)
+            return render_template('theme/{}.html'.format(theme_name), gallery=snaps)
+
+        elif theme_exists == False:
+            return render_template('theme/default.html'.format(theme_name), gallery=snaps)
+
         else:
-            print(f"Theme {gallery['data']['theme']} does not exist.")
+            print(f"Theme {theme_name} does not exist.")
 
     else:
         return abort(404)
@@ -200,7 +211,6 @@ def new_gallery():
         uploaded_files = False
     else:
         uploaded_files = func.file_handler(app.config['UPLOAD_FOLDER'], files_to_upload)
-        print(uploaded_files)
 
     r = requests.post(
         '{}/galleries?title={}'.format(config.BASEURL, title),
@@ -267,7 +277,6 @@ def new_snap():
         uploaded_files = False
     else:
         uploaded_files = func.file_handler(app.config['UPLOAD_FOLDER'], files_to_upload)
-        print(uploaded_files)
 
     if files_to_upload:
         for x in uploaded_files:
@@ -315,12 +324,6 @@ def edit_snap(id):
         snap = requests.get('{}/snaps/{}'.format(config.BASEURL, id),
         auth=HTTPBasicAuth(user['username'], user['password'])
         ).json()
-
-        test_snap = requests.get('{}/accounts'.format(config.BASEURL),
-        auth=HTTPBasicAuth(user['username'], user['password'])
-        ).json()
-
-        print(test_snap)
 
         if 'status' in snap and snap['status'] == 'success':
             snap_name = snap['data'][0]['name']

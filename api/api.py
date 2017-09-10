@@ -45,6 +45,11 @@ gallery_snaps = db.Table('gallery_snaps',
     db.Column('snap_id', db.Integer, db.ForeignKey('snap.id'))
 )
 
+theme_gallery = db.Table('theme_gallery',
+    db.Column('theme_id', db.Integer, db.ForeignKey('theme.id')),
+    db.Column('gallery_id', db.Integer, db.ForeignKey('gallery.id'))
+)
+
 
 class Account(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -75,10 +80,12 @@ class Gallery(db.Model):
     initdate = db.Column(db.String, default=str(datetime.datetime.utcnow()))
     private = db.Column(db.Boolean, default=True)
     shareuuid = db.Column(db.String, default='0')
-    theme = db.Column(db.String, default='default')
 
     # relationship
     snaps = db.relationship('Snap', secondary=gallery_snaps,
+        backref=db.backref('gallery', lazy='dynamic'))
+    # TODO: Theme should be one to many
+    theme = db.relationship('Theme', secondary=theme_gallery,
         backref=db.backref('gallery', lazy='dynamic'))
 
 
@@ -101,6 +108,18 @@ class Snap(db.Model):
 
     def __repr__(self):
         return '<Snap {}>'.format(self.id)
+
+
+class Theme(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    initdate = db.Column(db.String, default=str(datetime.datetime.utcnow()))
+    name = db.Column(db.String)
+
+    def __init__(self, name):
+        self.name = name
+
+    def __repr__(self):
+        return '<Theme {}>'.format(self.name)
 
 
 db.create_all()
@@ -286,6 +305,7 @@ class Galleries(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument('snaps', type=str, help='help text')
         parser.add_argument('private', type=str, help='help text')
+        parser.add_argument('theme', type=str, help='help text')
         args = parser.parse_args()
 
         get_gallery = Gallery.query.filter_by(id=id).first()
@@ -301,7 +321,7 @@ class Galleries(Resource):
                 else:
                     return resp(error='no such snap id')
 
-            elif args['private']:
+            if args['private']:
                 if get_gallery.private:
                     get_gallery.private = False
                     db.session.commit()
@@ -309,6 +329,18 @@ class Galleries(Resource):
                     get_gallery.private = True
                     db.session.commit()
 
+            if args['theme']:
+                get_theme = Theme.query.filter_by(name=args['theme']).first()
+                if get_theme:
+                    get_gallery.theme.remove(get_gallery.theme[0])
+                    get_gallery.theme.append(get_theme)
+                    db.session.commit()
+
+                    return resp(message='Theme has been changed.')
+
+
+                else:
+                    print('No such theme id')
             else:
                 pass
 
@@ -355,10 +387,13 @@ class GalleriesL(Resource):
 
         if args['title'] != None:
             raw_account = Account.query.filter_by(username=auth.username()).first()
+            default_theme = Theme.query.filter_by(name='default').first()
+
             new_gallery = Gallery(title=args['title'])
             new_gallery.shareuuid = str(uuid.uuid4())
-
+            new_gallery.theme.append(default_theme)
             new_gallery.account.append(raw_account)
+
             db.session.add(new_gallery)
             db.session.commit()
 
@@ -466,6 +501,90 @@ class SnapsL(Resource):
             return response, 400
 
 
+class Themes(Resource):
+    def get(self, id):
+        raw_theme = Theme.query.filter_by(id=id).first()
+
+        if raw_theme != None:
+            response = resp(data=convert.jsonify((raw_theme,)), status='success')
+            return response, 200
+
+        else:
+            response = resp(status='failed', error='no such snap id')
+            return response, 400
+
+    def put(self, id):
+        parser = reqparse.RequestParser()
+        parser.add_argument('name', type=str, help='help text')
+        args = parser.parse_args()
+
+        get_theme = Theme.query.filter_by(id=id).first()
+
+        if get_theme != None:
+            if args['name']:
+                if get_theme.name:
+                    get_theme.name = args['name']
+                    db.session.commit()
+
+                    return resp(status='success', message='theme has been renamed')
+
+        else:
+            return resp(error='no such theme id')
+
+    def delete(self, id):
+        # TODO: delete physical file from s3 also
+
+        get_theme = Theme.query.filter_by(id=id).first()
+        if get_theme:
+            db.session.delete(get_theme)
+            db.session.commit()
+
+            response = resp(status='success', message='theme successfully deleted')
+
+            return response, 201
+
+        else:
+            return resp(message='theme id does not exist')
+
+
+class ThemesL(Resource):
+    def get(self):
+        get_theme = Theme.query.all()
+        if get_theme:
+
+            response = resp(data=convert.jsonify(get_theme), status='success')
+            return response, 200
+
+        else:
+            response = resp(status='failed', error='Returned NoneType')
+            return response, 401
+
+    def post(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('name', type=str, help='helper text')
+        args = parser.parse_args()
+
+        if args['name'] != None:
+            new_theme = Theme(name=args['name'])
+
+            db.session.add(new_theme)
+            db.session.commit()
+
+            response = resp(
+                data=convert.jsonify((new_theme,)),
+                link='/themes/{}'.format(new_theme.id),
+                status='success'
+            )
+
+            return response, 201
+
+        else:
+
+            response = resp(error='missing required data', message='')
+            return response, 400
+
+
+
 # routes
 api.add_resource(Entry, '/')
 api.add_resource(Shareuuid, '/shareuuid/<uuid>')
@@ -475,6 +594,8 @@ api.add_resource(Galleries, '/galleries/<id>')
 api.add_resource(GalleriesL, '/galleries')
 api.add_resource(Snaps, '/snaps/<id>')
 api.add_resource(SnapsL, '/snaps')
+api.add_resource(Themes, '/themes/<id>')
+api.add_resource(ThemesL, '/themes')
 
 
 if __name__ == '__main__':
