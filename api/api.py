@@ -164,7 +164,14 @@ class Shareuuid(Resource):
             return response
 
         else:
-            response = resp(status='success', data=convert.jsonify((raw_gallery,))[0]['snaps'])
+            converted_to_json = convert.jsonify((raw_gallery,))[0]
+
+            gallery = {
+                'theme': converted_to_json['theme'],
+                'snaps': converted_to_json['snaps']
+            }
+
+            response = resp(status='success', data=gallery)
             return response
 
 

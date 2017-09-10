@@ -96,9 +96,19 @@ def share(uuid):
     gallery = requests.get(f'{config.BASEURL}/shareuuid/{uuid}').json()
 
     if 'status' in gallery and gallery['status'] == 'success':
-        gallery = [snap for snap in gallery['data'] if snap['private'] != True]
+        snaps = [snap for snap in gallery['data']['snaps'] if snap['private'] != True]
 
-        return render_template('share.html', gallery=gallery)
+        # TODO: IMP theme names into database.
+
+        theme_exists = func.check_file_server(os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            'templates', 'theme'
+            ), f"{gallery['data']['theme']}.html")
+
+        if theme_exists:
+            return render_template('theme/{}.html'.format(gallery['data']['theme']), gallery=snaps)
+        else:
+            print(f"Theme {gallery['data']['theme']} does not exist.")
 
     else:
         return abort(404)
@@ -167,10 +177,6 @@ def gallery(id):
         if response['status']:
             if response['status'] == 'success':
                 gallery = response['data']
-                # TODO: IMP theme names into database.
-                theme = 'default'
-
-                return render_template('theme/{}.html'.format(theme), gallery=gallery, user=user, gallery_id=id)
 
             else:
                 gallery = []
