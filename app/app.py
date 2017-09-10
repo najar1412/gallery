@@ -167,6 +167,11 @@ def gallery(id):
         if response['status']:
             if response['status'] == 'success':
                 gallery = response['data']
+                # TODO: IMP theme names into database.
+                theme = 'default'
+
+                return render_template('theme/{}.html'.format(theme), gallery=gallery, user=user, gallery_id=id)
+
             else:
                 gallery = []
         else:

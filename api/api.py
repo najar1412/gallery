@@ -75,6 +75,7 @@ class Gallery(db.Model):
     initdate = db.Column(db.String, default=str(datetime.datetime.utcnow()))
     private = db.Column(db.Boolean, default=True)
     shareuuid = db.Column(db.String, default='0')
+    theme = db.Column(db.String, default='default')
 
     # relationship
     snaps = db.relationship('Snap', secondary=gallery_snaps,
