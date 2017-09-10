@@ -17,6 +17,8 @@ from packages import convert
 # TODO: look into building 'gallery templates' for when a gallery is shared.
 # TODO: IMP postgres
 # TODO: IMP 'dev mode' disabling aws things, uploading localling instead.
+# TODO: build something that checks images on s3 with database snaps, returning
+# any mismatches. app side?
 
 # Config
 # init app and db
