@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 {% block content %}
 
+{% if snaps|length != 0 %}
+
 <div class="alert alert-secondary" role="alert">
   <form class="form-inline" action="/new_snap" method="POST" enctype="multipart/form-data">
     Upload New Snap &emsp;
@@ -32,7 +34,8 @@
       {% else %}
         <button class="btn btn-success btn-sm" name='private' type="submit">Public</button>
       {% endif %}
-      <button class="btn btn-light btn-sm" name='transform' type="submit">Transform</button> &emsp; &emsp; &emsp;
+      <button class="btn btn-primary btn-sm" name='transform' type="submit">Correct</button>
+      <button class="btn btn-primary btn-sm" name='transform' type="submit">Assign</button> &emsp;
       <button class="btn btn-outline-danger btn-sm" name='delete' type="submit">Delete</button>
     </form>
   </div>
@@ -58,6 +61,12 @@
     </ul>
   </nav>
 
-<p style="height:60px;">
+{% else %}
+
+<div class="alert alert-danger" role="alert">
+  You currently have no snaps.
+</div>
+
+{% endif %}
 
 {% endblock %}

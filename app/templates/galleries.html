@@ -17,6 +17,8 @@
   </form>
 </div>
 
+{% if galleries|length != 0 %}
+
 <div style="font-size:10px;padding-bottom:10px;color:darkgray;">
   <strong>FILTER</strong>: &emsp;&emsp; <a href="" style="color:black;">Private</a> | <a href="" style="color:black;">Public</a>
 </div>
@@ -35,19 +37,34 @@
 
       <form action="/edit_gallery/{{gallery.id}}" method="POST">
         {% if gallery.private == True %}
-          <button class="btn btn-danger btn-sm" name='private' type="submit">Private</button>
+          <button class="btn btn-danger" name='private' type="submit">Private</button>
         {% else %}
-          <button class="btn btn-success btn-sm" name='private' type="submit">Public</button>
-          <a href='/share/{{gallery.shareuuid}}' class="btn btn-light btn-sm" role="button" target="_blank">Share</a>
+          <button class="btn btn-success" name='private' type="submit">Public</button>
+          <a href='/share/{{gallery.shareuuid}}' class="btn btn-light" role="button" target="_blank">Share</a>
         {% endif %}
-        <button class="btn btn-light btn-sm" name='edit' type="submit">Edit</button> &emsp; |  &emsp;
-        <button class="btn btn-outline-danger btn-sm" name='delete' type="submit">Delete</button>
+        <select class="form-control">
+  <option selected>{{gallery.theme.0.name}}</option>
+  <option value="1">One</option>
+  <option value="2">Two</option>
+  <option value="3">Three</option>
+</select>
+
+        <button class="btn btn-light" name='edit' type="submit">Edit</button> &emsp; |  &emsp;
+        <button class="btn btn-outline-danger" name='delete' type="submit">Delete</button>
       </form>
     </p>
   </div>
 </div>
 
-  {% endfor %}
+{% endfor %}
+
+{% else %}
+
+<div class="alert alert-danger" role="alert">
+  You currently have no galleries.
+</div>
+
+{% endif %}
 
 
 {% endblock %}
