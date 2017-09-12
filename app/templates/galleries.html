@@ -38,6 +38,7 @@
 
       <form class="form-inline" action="/edit_gallery/{{gallery.id}}" method="POST">
         {% if gallery.private == True %}
+<<<<<<< HEAD
           <button class="btn btn-danger" name='private' type="submit">Private</button> |
         {% else %}
           <button class="btn btn-success" name='private' type="submit">Public</button>
@@ -51,6 +52,19 @@
           {% endfor %}
         </select>
         <button class="btn btn-primary" type="submit">Change</button> |
+=======
+          <button class="btn btn-danger" name='private' type="submit">Private</button>
+        {% else %}
+          <button class="btn btn-success" name='private' type="submit">Public</button>
+          <a href='/share/{{gallery.shareuuid}}' class="btn btn-light" role="button" target="_blank">Share</a>
+        {% endif %}
+        <select class="form-control">
+  <option selected>{{gallery.theme.0.name}}</option>
+  <option value="1">One</option>
+  <option value="2">Two</option>
+  <option value="3">Three</option>
+</select>
+>>>>>>> 6e43798dfcbdef74ae1798d344de2aebe369a1d2
 
         <button class="btn btn-light" name='edit' type="submit">Edit</button> &emsp; |  &emsp;
         <button class="btn btn-outline-danger" name='delete' type="submit">Delete</button>
@@ -59,8 +73,11 @@
   </div>
 </div>
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 6e43798dfcbdef74ae1798d344de2aebe369a1d2
 {% endfor %}
 
 {% else %}
