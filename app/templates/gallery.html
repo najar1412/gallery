@@ -15,10 +15,10 @@
 </div>
 
 <div class="alert alert-dark" role="alert">
-  Stats &emsp; | &emsp; Theme: {{gallery.0.theme.0.name}}
+  Theme: {{gallery.0.theme.0.name}} <small><a href="">[change]</a></small> &emsp; | &emsp; Snaps: {{gallery.0.snaps|length}}
 </div>
 
-<div class=".container-fluid">
+<div style="display:flex; justify-content: space-around; flex-wrap:wrap;">
 {% for snap in gallery.0.snaps %}
 
 <div class="card" style="width: 20rem; margin-top:2px; margin-bottom:2px;background-image: url('https://s3.amazonaws.com/gallerystore/{{snap.name}}'); background-position: center; display:inline-block;">

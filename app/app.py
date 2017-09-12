@@ -11,6 +11,8 @@ from packages import func
 
 
 # TODO: UPloading anything other than a jpg is an error.
+# TODO: on dev rebuilding the database if user has redicentuals still in session
+# user can still up load to s3, strange bug.
 
 # Flask config
 app = Flask(__name__)
@@ -28,6 +30,8 @@ if test.status_code == 200:
 else:
     requests.post(
         '{}/themes?name=default'.format(config.BASEURL))
+    requests.post(
+        '{}/themes?name=01'.format(config.BASEURL))
 
 
 @app.route('/temptest')
@@ -133,19 +137,32 @@ def galleries():
             '{}/galleries'.format(config.BASEURL),
             auth=HTTPBasicAuth(user['username'], user['password'])
             )
+
         response = r.json()
 
         if response['status']:
             if response['status'] == 'success':
                 galleries = response['data']
 
+                themes = requests.get(
+                    '{}/themes'.format(config.BASEURL)
+                    )
+
+                if themes.status_code == 200:
+                    if 'status' in themes.json() and themes.json()['status'] == 'success':
+                        get_themes = themes.json()['data']
+                else:
+                    get_themes = []
+
             else:
+                get_themes = []
                 galleries = []
 
         else:
+            get_themes = []
             galleries = []
 
-        return render_template('galleries.html', galleries=galleries, user=user)
+        return render_template('galleries.html', galleries=galleries, themes=get_themes, user=user)
 
     else:
         return redirect(url_for('login'))
@@ -249,10 +266,21 @@ def edit_gallery(id):
             auth=HTTPBasicAuth(user['username'], user['password'])
             )
 
-    elif 'edit' in args:
+    if 'changed_theme' in args:
+        get_theme = requests.get(f'{config.BASEURL}/themes/{args["changed_theme"][0]}')
+        if get_theme.status_code == 200:
+            theme_name = str(get_theme.json()['data'][0]['name'])
+            requests.put(
+                f'{config.BASEURL}/galleries/{id}?theme={theme_name}',
+                auth=HTTPBasicAuth(user['username'], user['password'])
+                )
+        else:
+            pass
+
+    if 'edit' in args:
         print('edit clickd')
 
-    elif 'delete' in args:
+    if 'delete' in args:
         requests.delete(
             '{}/galleries/{}'.format(config.BASEURL, id),
             auth=HTTPBasicAuth(user['username'], user['password'])
