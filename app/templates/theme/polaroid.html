@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='theme/01/01.css') }}">
+  </head>
+
+  <body style="margin:0;background: url({{ url_for('static', filename='theme/01/wood-bg.jpg') }}) repeat;">
+
+
+
+
+
+    <style type="text/css">
+      @media screen and (max-width: 767px) {
+        .polaroids li:nth-child(n+5) {
+          display: none;
+        }
+      }
+
+        ul.polaroids li { display: inline; }
+      	ul.polaroids a { background: #fff; display: inline; float: left; margin: 0 0 27px 30px; width: auto; padding: 10px 10px 15px; text-align: center; font-family: "Marker Felt", sans-serif; text-decoration: none; color: #333; font-size: 18px; -webkit-box-shadow: 0 3px 6px rgba(0,0,0,.25); -moz-box-shadow: 0 3px 6px rgba(0,0,0,.25); -webkit-transform: rotate(-2deg); -webkit-transition: -webkit-transform .15s linear; -moz-transform: rotate(-2deg); }
+        ul.polaroids li {
+          padding-left: 0;
+        }
+        @media screen and (max-width: 768px) {
+          ul.polaroids li a {
+            margin-left: 0;
+          }
+        }
+    		ul.polaroids img { display: block; width: 190px; margin-bottom: 12px; }
+    		ul.polaroids a:after { content: attr(title); }
+
+    		ul.polaroids li:nth-child(even) a { -webkit-transform: rotate(2deg);  -moz-transform: rotate(2deg); }
+    		ul.polaroids li:nth-child(3n) a { -webkit-transform: none; position: relative; top: -5px;  -moz-transform: none; }
+    		ul.polaroids li:nth-child(5n) a { -webkit-transform: rotate(5deg); position: relative; right: 5px;  -moz-transform: rotate(5deg); }
+    		ul.polaroids li:nth-child(8n) a { position: relative; right: 5px; top: 8px; }
+    		ul.polaroids li:nth-child(11n) a { position: relative; left: -5px; top: 3px; }
+
+    		ul.polaroids li.messy a {
+          margin-top: -400px;
+          position: relative;
+          left: 160px;
+        }
+
+    		ul.polaroids li a:hover { -webkit-transform: scale(1.25); -moz-transform: scale(1.25); -webkit-box-shadow: 0 3px 6px rgba(0,0,0,.5); -moz-box-shadow: 0 3px 6px rgba(0,0,0,.5); position: relative; z-index: 5; }
+    </style>
+
+
+    <div class="row">
+    <div class="large-12 columns" style="overflow: visible">
+    <ul class="polaroids large-block-grid-4 small-block-grid-2">
+
+{% for snap in gallery %}
+
+    <li>
+      <a href="https://www.flickr.com/photos/zurbinc/3971679981/" title="Roeland!">
+        <img src="https://s3.amazonaws.com/gallerystore/{{snap.name}}" alt="sick"/>
+      </a>
+    </li>
+
+{% endfor %}
+
+    </ul>
+    </div>
+    </div>
+
+
+
+
+
+
+    <footer class="footer text-muted">
+      <small>
+    <p style="height:5px"></p>
+  <div class="container">
+    <p>Gallery stolen from <a href="http://wwww.zurb.com">zurb.com</a>, all credit goes to them.</p>
+    <p>Share your own galleries with <a href="http://localhost:5000">[Gallery]</a>!</p>
+  </div>
+  </small>
+</footer>
+
+
+
+
+
+
+  </body>
+</html>

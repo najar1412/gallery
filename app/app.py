@@ -31,12 +31,12 @@ else:
     requests.post(
         '{}/themes?name=default'.format(config.BASEURL))
     requests.post(
-        '{}/themes?name=01'.format(config.BASEURL))
+        '{}/themes?name=polaroid'.format(config.BASEURL))
 
 
 @app.route('/temptest')
 def temptest():
-    return render_template('temptest.html')
+    return render_template('theme/polar.html')
 
 
 # flask errors
