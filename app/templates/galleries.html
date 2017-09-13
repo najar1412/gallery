@@ -19,57 +19,47 @@
 
 {% if galleries|length != 0 %}
 
-<div style="font-size:10px;padding-bottom:10px;color:darkgray;">
-  <strong>FILTER</strong>: &emsp;&emsp; <a href="" style="color:black;">Private</a> | <a href="" style="color:black;">Public</a>
-</div>
-
-
-{% for gallery in galleries %}
-
-<div class="card text-white bg-dark mb-3" style="max-width: 100%;">
-  <div class="card-header"><small>{{gallery.initdate}} | [{{ gallery.snaps|length }}]</small></div>
-  <div class="card-body">
-    <br>
-    <br>
-    <a href="/gallery/{{gallery.id}}">
-      <h1 class="card-title">{{gallery.title}}</h1>
-    </a>
-    <p class="card-text">
-
-      <form class="form-inline" action="/edit_gallery/{{gallery.id}}" method="POST">
-        {% if gallery.private == True %}
-          <button class="btn btn-danger" name='private' type="submit">Private</button> |
-        {% else %}
-          <button class="btn btn-success" name='private' type="submit">Public</button>
-          <a href='/share/{{gallery.shareuuid}}' class="btn btn-light" role="button" target="_blank">Share</a> |
-        {% endif %}
-
-        <select name="changed_theme" class="form-control">
-          <option selected>{{gallery.theme.0.name}}</option>
-          {% for theme in themes %}
-          <option value="{{theme.id}}">{{theme.name}}</option>
-          {% endfor %}
-        </select>
-        <button class="btn btn-primary" type="submit">Change</button> |
-          <button class="btn btn-danger" name='private' type="submit">Private</button>
-        {% else %}
-          <button class="btn btn-success" name='private' type="submit">Public</button>
-          <a href='/share/{{gallery.shareuuid}}' class="btn btn-light" role="button" target="_blank">Share</a>
-        {% endif %}
-        <select class="form-control">
-  <option selected>{{gallery.theme.0.name}}</option>
-  <option value="1">One</option>
-  <option value="2">Two</option>
-  <option value="3">Three</option>
-</select>
-
-        <button class="btn btn-light" name='edit' type="submit">Edit</button> &emsp; |  &emsp;
-        <button class="btn btn-outline-danger" name='delete' type="submit">Delete</button>
-      </form>
-    </p>
+  <div style="font-size:10px;padding-bottom:10px;color:darkgray;">
+    <strong>FILTER</strong>: &emsp;&emsp; <a href="" style="color:black;">Private</a> | <a href="" style="color:black;">Public</a>
   </div>
-</div>
-{% endfor %}
+
+
+  {% for gallery in galleries %}
+
+    <div class="card text-white bg-dark mb-3" style="max-width: 100%;">
+      <div class="card-header"><small>{{gallery.initdate}} | [{{ gallery.snaps|length }}]</small></div>
+      <div class="card-body">
+        <br>
+        <br>
+        <a href="/gallery/{{gallery.id}}">
+          <h1 class="card-title">{{gallery.title}}</h1>
+        </a>
+        <p class="card-text">
+        <form class="form-inline" action="/edit_gallery/{{gallery.id}}" method="POST">
+
+          {% if gallery.private == True %}
+            <button class="btn btn-danger" name='private' type="submit">Private</button> |
+          {% else %}
+            <button class="btn btn-success" name='private' type="submit">Public</button>
+            <a href='/share/{{gallery.shareuuid}}' class="btn btn-light" role="button" target="_blank">Share</a> |
+          {% endif %}
+
+          <select name="changed_theme" class="form-control">
+            <option selected>{{gallery.theme.0.name}}</option>
+            {% for theme in themes %}
+              <option value="{{theme.id}}">{{theme.name}}</option>
+            {% endfor %}
+          </select>
+
+          <button class="btn btn-primary" type="submit">Change</button> |
+
+          <button class="btn btn-light" name='edit' type="submit">Edit</button> &emsp; |  &emsp;
+          <button class="btn btn-outline-danger" name='delete' type="submit">Delete</button>
+        </form>
+        </p>
+      </div>
+    </div>
+  {% endfor %}
 
 {% else %}
 
