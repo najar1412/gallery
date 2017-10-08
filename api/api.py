@@ -126,7 +126,6 @@ class Theme(db.Model):
 
 db.create_all()
 
-
 # helpers
 def resp(status=None, data=None, link=None, error=None, message=None):
     """Function im using to build responses"""

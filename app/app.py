@@ -32,11 +32,13 @@ else:
         '{}/themes?name=default'.format(config.BASEURL))
     requests.post(
         '{}/themes?name=polaroid'.format(config.BASEURL))
+    requests.post(
+        '{}/themes?name=slide'.format(config.BASEURL))
 
 
 @app.route('/temptest')
 def temptest():
-    return render_template('theme/polar.html')
+    return render_template('theme/slide.html')
 
 
 # flask errors
@@ -370,6 +372,12 @@ def edit_snap(id):
     else:
         return redirect('snaps')
 
+
+@app.route('/filter', methods=['GET', 'POST'])
+def fitler(filter):
+    user = func.SessonHandler(session).get()
+    if user:
+        func.SessionHandler(session).filter(filter)
 
 @app.route('/settings')
 def settings():

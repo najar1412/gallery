@@ -23,6 +23,7 @@ class SessionHandler():
         if r.status_code == 200:
             self.session['username'] = username
             self.session['password'] = password
+            self.session['filter'] = None
             return True
 
         elif r.status_code == 401:
@@ -40,11 +41,19 @@ class SessionHandler():
             result[k] = self.session[k]
         return result
 
+    def filter(self, filter):
+        ALLOWED_FILTERS = ['gallery', 'nogallery']
+        if filter not in ALLOWED_FILTERS:
+            self.filter = None
+        else:
+            self.filter = filter
+
     def close(self):
         # TODO: remove any other attris in session
         self.session.pop('username', None)
         self.session.pop('user_name', None)
         self.session.pop('test', None)
+        self.session.pop('filter', None)
 
 
 # helpers
