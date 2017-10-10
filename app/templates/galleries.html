@@ -2,72 +2,17 @@
 {% block content %}
 
 <div class="alert alert-secondary" role="alert">
-  <form class="form-inline" action="/new_gallery" method="POST" enctype="multipart/form-data">
+  <form class="form-inline" action="/new_gallery" method="POST">
     Create New Gallery &emsp;
     <div class="form-group">
       <input type="text" name="title" id="title" class="form-control" placeholder="Gallery Name" required>
     </div>
-    <label class="custom-file">
-      <input type="file" name="upload" class="custom-file-input" multiple>
-      <span class="custom-file-control"></span>
-
-    </label>
      &emsp; | &emsp;
     <button class="btn btn-primary" type="submit">Post</button>
   </form>
 </div>
 
-{% if galleries|length != 0 %}
-
-  <div style="font-size:10px;padding-bottom:10px;color:darkgray;">
-    <strong>FILTER</strong>: &emsp;&emsp; <a href="" style="color:black;">Private</a> | <a href="" style="color:black;">Public</a>
-  </div>
-
-
-  {% for gallery in galleries %}
-
-    <div class="card text-white bg-dark mb-3" style="max-width: 100%;">
-      <div class="card-header"><small>{{gallery.initdate}} | [{{ gallery.snaps|length }}]</small></div>
-      <div class="card-body">
-        <br>
-        <br>
-        <a href="/gallery/{{gallery.id}}">
-          <h1 class="card-title">{{gallery.title}}</h1>
-        </a>
-        <p class="card-text">
-        <form class="form-inline" action="/edit_gallery/{{gallery.id}}" method="POST">
-
-          {% if gallery.private == True %}
-            <button class="btn btn-danger" name='private' type="submit">Private</button> |
-          {% else %}
-            <button class="btn btn-success" name='private' type="submit">Public</button>
-            <a href='/share/{{gallery.shareuuid}}' class="btn btn-light" role="button" target="_blank">Share</a> |
-          {% endif %}
-
-          <select name="changed_theme" class="form-control">
-            <option selected>{{gallery.theme.0.name}}</option>
-            {% for theme in themes %}
-              <option value="{{theme.id}}">{{theme.name}}</option>
-            {% endfor %}
-          </select>
-
-          <button class="btn btn-primary" type="submit">Change</button> |
-
-          <button class="btn btn-light" name='edit' type="submit">Edit</button> &emsp; |  &emsp;
-          <button class="btn btn-outline-danger" name='delete' type="submit">Delete</button>
-        </form>
-        </p>
-      </div>
-    </div>
-  {% endfor %}
-
-{% else %}
-
-<div class="alert alert-danger" role="alert">
-  You currently have no galleries.
-</div>
-
-{% endif %}
+{% include 'gallery_table.html' %}
 
 
 {% endblock %}

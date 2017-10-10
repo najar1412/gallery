@@ -18,12 +18,12 @@
 {% set nextimage = loop.index + 1 %}
 
 <a href="#image{{loop.index}}">
-    <img src="https://s3.amazonaws.com/gallerystore/{{x.name}}" class="thumb" />
+    <img src="https://s3.amazonaws.com/gallerystore/{{x.snap_original}}" class="thumb" />
   </a>
 
   <div id="image{{loop.index}}" class="lightbox">
       <a href="#_">
-        <img src="https://s3.amazonaws.com/gallerystore/{{x.name}}" />
+        <img src="https://s3.amazonaws.com/gallerystore/{{x.snap_original}}" />
       </a>
   
       <a href="#image{{nextimage}}"> 

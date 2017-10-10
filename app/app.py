@@ -131,6 +131,7 @@ def share(uuid):
         return abort(404)
 
 
+# refactor for batches
 @app.route('/galleries')
 def galleries():
     user = func.SessionHandler(session).get()
@@ -170,6 +171,34 @@ def galleries():
         return redirect(url_for('login'))
 
 
+
+@app.route('/batches')
+def batches():
+    user = func.SessionHandler(session).get()
+    if 'username' in user:
+        r = requests.get(
+            '{}/batches'.format(config.BASEURL),
+            auth=HTTPBasicAuth(user['username'], user['password'])
+            )
+
+        response = r.json()
+
+        if response['status']:
+            if response['status'] == 'success':
+                batches = response['data']
+
+            else:
+                batches = []
+
+        else:
+            batches = []
+
+        return render_template('batches.html', batches=batches, user=user)
+
+    else:
+        return redirect(url_for('login'))
+
+
 @app.route('/snaps')
 def snaps():
     user = func.SessionHandler(session).get()
@@ -196,6 +225,7 @@ def snaps():
         return redirect(url_for('login'))
 
 
+# refactor for batches
 @app.route('/gallery/<int:id>')
 def gallery(id):
     user = func.SessionHandler(session).get()
@@ -219,8 +249,61 @@ def gallery(id):
         return redirect(url_for('login'))
 
 
+# refactor for batches
+@app.route('/batch/<int:id>')
+def batch(id):
+    user = func.SessionHandler(session).get()
+    if 'username' in user:
+        response = requests.get(
+            '{}/batches/{}'.format(config.BASEURL, id),
+            auth=HTTPBasicAuth(user['username'], user['password'])
+            ).json()
+        if response['status']:
+            if response['status'] == 'success':
+                batch = response['data']
+                print('oooooooooooooooooooooooooo')
+                print(batch)
+
+            else:
+                batch = []
+        else:
+            batch = []
+
+        return render_template('batch.html', batch=batch, user=user, batch_id=id)
+
+    else:
+        return redirect(url_for('login'))
+
+
+# refactor to work on batches
 @app.route('/new_gallery', methods=['GET', 'POST'])
 def new_gallery():
+    user = func.SessionHandler(session).get()
+    args = dict(request.form)
+
+    # check if there are selected snaps for new gallery
+    if 'selection' not in args:
+        selection = ''
+    else:
+        selection = ' '.join(session['selection'])
+
+    r = requests.post(
+        '{}/galleries?title={}&snaps={}'.format(config.BASEURL, args['title'][0], selection),
+        auth=HTTPBasicAuth(user['username'], user['password'])
+        )
+
+    if r.json()['status'] == 'success':
+        gallery_id = r.json()['data'][0]['id']
+
+        # append selected snaps to new gallery
+
+        return redirect(f'gallery/{gallery_id}')
+
+    return redirect(url_for('galleries'))
+
+
+@app.route('/new_batch', methods=['GET', 'POST'])
+def new_batch():
     user = func.SessionHandler(session).get()
     title = request.form['title']
     files_to_upload = request.files.getlist("upload")
@@ -232,29 +315,28 @@ def new_gallery():
         uploaded_files = func.file_handler(app.config['UPLOAD_FOLDER'], files_to_upload)
 
     r = requests.post(
-        '{}/galleries?title={}'.format(config.BASEURL, title),
+        '{}/batches?title={}'.format(config.BASEURL, title),
         auth=HTTPBasicAuth(user['username'], user['password'])
         )
 
     if uploaded_files and r.json()['status'] == 'success':
-        gallery_id = r.json()['data'][0]['id']
+        batch_id = r.json()['data'][0]['id']
         for x in uploaded_files:
-
             post_snap = requests.post(
-                '{}/snaps?name={}'.format(config.BASEURL, x),
+                '{}/snaps?name={}&snap_original={}&snap_lores={}&snap_thumb={}'.format(config.BASEURL, x, x, x, x),
                 auth=HTTPBasicAuth(user['username'], user['password'])
                 ).json()
 
             if 'status' in post_snap and post_snap['status'] == 'success':
                 snaps_id = post_snap['data'][0]['id']
                 requests.put(
-                    f'{config.BASEURL}/galleries/{gallery_id}?snaps={snaps_id}',
+                    f'{config.BASEURL}/batches/{batch_id}?snaps={snaps_id}',
                     auth=HTTPBasicAuth(user['username'], user['password'])
                     )
+           
+        return redirect(f'batch/{batch_id}')
 
-        return redirect(f'gallery/{gallery_id}')
-
-    return redirect(url_for('galleries'))
+    return redirect(url_for('batches'))
 
 
 @app.route('/edit_gallery/<int:id>', methods=['GET', 'POST'])
@@ -279,6 +361,12 @@ def edit_gallery(id):
         else:
             pass
 
+    if 'snap_id' in args:
+        requests.put(
+            f'{config.BASEURL}/galleries/{id}?snaps={args["snap_id"][0]}',
+            auth=HTTPBasicAuth(user['username'], user['password'])
+            )
+
     if 'edit' in args:
         print('edit clickd')
 
@@ -289,6 +377,31 @@ def edit_gallery(id):
             )
 
     return redirect(url_for('galleries'))
+
+
+@app.route('/edit_batch/<int:id>', methods=['GET', 'POST'])
+def edit_batch(id):
+    user = func.SessionHandler(session).get()
+    args = dict(request.form)
+
+    if 'snap_id' in args:
+        # TODO: IMP
+        requests.put(
+            f'{config.BASEURL}/galleries/{id}?snaps={args["snap_id"][0]}',
+            auth=HTTPBasicAuth(user['username'], user['password'])
+            )
+
+    if 'edit' in args:
+        print('edit clickd')
+
+    if 'delete' in args:
+        requests.delete(
+            '{}/batches/{}'.format(config.BASEURL, id),
+            auth=HTTPBasicAuth(user['username'], user['password'])
+            )
+
+    return redirect(url_for('batches'))
+
 
 
 @app.route('/new_snap', methods=['GET', 'POST'])
@@ -349,6 +462,10 @@ def edit_snap(id):
     elif 'transform' in args:
         print('transform clickd')
 
+    elif 'select' in args:
+        print(args)
+        add_selection = func.SessionHandler(session).selection(args['select'])
+
     elif 'delete' in args:
         print('deleting.................')
         snap = requests.get('{}/snaps/{}'.format(config.BASEURL, id),
@@ -356,7 +473,7 @@ def edit_snap(id):
         ).json()
 
         if 'status' in snap and snap['status'] == 'success':
-            snap_name = snap['data'][0]['name']
+            snap_name = snap['data'][0]['snap_original']
 
             delete_from_s3 = func.delete_file_s3(snap_name)
             if delete_from_s3:
@@ -367,10 +484,14 @@ def edit_snap(id):
             else:
                 print('Deleting {} from s3 failed.')
 
+            if 'batch' in args and args['batch'] != '':
+                print('REALLY?!')
+                return redirect(f'batch/{args["batch"][0]}')
+
     if gallery_id:
         return redirect(f'gallery/{gallery_id}')
     else:
-        return redirect('snaps')
+        return redirect(f'batch/{args["batch"][0]}')
 
 
 @app.route('/filter', methods=['GET', 'POST'])

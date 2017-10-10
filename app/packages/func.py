@@ -24,6 +24,7 @@ class SessionHandler():
             self.session['username'] = username
             self.session['password'] = password
             self.session['filter'] = None
+            self.session['selection'] = []
             return True
 
         elif r.status_code == 401:
@@ -48,12 +49,28 @@ class SessionHandler():
         else:
             self.filter = filter
 
+    def selection(self, snaps):
+        for snap_id in snaps:
+            if snap_id in self.session['selection']:
+                print(snap_id)
+                print(self.session['selection'])
+                self.session['selection'].remove(str(snap_id))
+                self.session.modified = True
+            else:
+                print(snap_id)
+                print(self.session['selection'])
+                self.session['selection'].append(snap_id)
+                self.session.modified = True
+        print(self.session['selection'])
+
+
     def close(self):
         # TODO: remove any other attris in session
         self.session.pop('username', None)
         self.session.pop('user_name', None)
         self.session.pop('test', None)
         self.session.pop('filter', None)
+        self.session.pop('selection', None)
 
 
 # helpers

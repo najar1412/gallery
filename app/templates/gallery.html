@@ -1,47 +1,22 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="alert alert-secondary" role="alert">
-  <form class="form-inline" action="/new_snap" method="POST" enctype="multipart/form-data">
-    Upload New Snap &emsp;
-    <label class="custom-file">
-      <input type="file" name="upload" class="custom-file-input" multiple>
-      <span class="custom-file-control"></span>
-    </label>
-    <input type="hidden" name="gallery" value="{{gallery_id}}">
-     &emsp; | &emsp;
-    <button class="btn btn-primary" type="submit">Post</button>
-  </form>
-</div>
 
 <div class="alert alert-dark" role="alert">
   Theme: {{gallery.0.theme.0.name}} <small><a href="">[change]</a></small> &emsp; | &emsp; Snaps: {{gallery.0.snaps|length}}
 </div>
 
-<div style="display:flex; justify-content: space-around; flex-wrap:wrap;">
-{% for snap in gallery.0.snaps %}
-
-<div class="card" style="width: 20rem; margin-top:2px; margin-bottom:2px;background-image: url('https://s3.amazonaws.com/gallerystore/{{snap.name}}'); background-position: center; display:inline-block;">
-  <div class="card-body">
-    <h4 class="card-title">&emsp;</h4>
-    <h6 class="card-subtitle mb-2 text-muted">&emsp;</h6>
-    <p class="card-text">&emsp;</p>
-    <form action="/edit_snap/{{snap.id}}" method="POST">
-      <input type="hidden" name="gallery" value="{{gallery_id}}">
-      {% if snap.private == True %}
-        <button class="btn btn-danger btn-sm" name='private' type="submit">Private</button>
-      {% else %}
-        <button class="btn btn-success btn-sm" name='private' type="submit">Public</button>
-      {% endif %}
-      <button class="btn btn-light btn-sm" name='transform' type="submit">Transform</button> &emsp;&emsp; &emsp;
-      <button class="btn btn-outline-danger btn-sm" name='delete' type="submit">Delete</button>
+<div class="alert alert-secondary" role="alert">
+    <form class="form-inline" action="/edit_gallery/{{gallery.0.id}}" method="POST" enctype="multipart/form-data">
+        Add Snap to Gallery &emsp;
+        <div class="form-group">
+        <input type="text" name="snap_id" id="snap_id" class="form-control" placeholder="Snap ID" required>
+        </div>
+        <button class="btn btn-primary" type="submit">Post</button>
     </form>
-  </div>
 </div>
 
-{% endfor %}
-
-  </div>
-
+{% set snaps = gallery.0.snaps %}
+{% include 'snaps.html' %}
 
 {% endblock %}

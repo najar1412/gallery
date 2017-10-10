@@ -37,9 +37,24 @@ account_galleries = db.Table('account_galleries',
     db.Column('gallery_id', db.Integer, db.ForeignKey('gallery.id'))
 )
 
+account_batches = db.Table('account_batches',
+    db.Column('account_id', db.Integer, db.ForeignKey('account.id')),
+    db.Column('batch_id', db.Integer, db.ForeignKey('batch.id'))
+)
+
 account_snaps = db.Table('account_snaps',
     db.Column('account_id', db.Integer, db.ForeignKey('account.id')),
     db.Column('snap_id', db.Integer, db.ForeignKey('snap.id'))
+)
+
+batch_snaps = db.Table('batch_snaps',
+    db.Column('batch_id', db.Integer, db.ForeignKey('batch.id')),
+    db.Column('snap_id', db.Integer, db.ForeignKey('snap.id'))
+)
+
+batch_galleries = db.Table('batch_galleries',
+    db.Column('batch_id', db.Integer, db.ForeignKey('batch.id')),
+    db.Column('gallery_id', db.Integer, db.ForeignKey('gallery.id'))
 )
 
 gallery_snaps = db.Table('gallery_snaps',
@@ -61,6 +76,9 @@ class Account(db.Model):
 
     # relationships
     # comments
+    batches = db.relationship('Batch', secondary=account_batches,
+        backref=db.backref('account', lazy='dynamic'))
+
     galleries = db.relationship('Gallery', secondary=account_galleries,
         backref=db.backref('account', lazy='dynamic'))
 
@@ -74,6 +92,26 @@ class Account(db.Model):
 
     def __repr__(self):
         return '<Account {}>'.format(self.id)
+
+
+class Batch(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String)
+    initdate = db.Column(db.String, default=str(datetime.datetime.utcnow()))
+
+    # relationship
+    snaps = db.relationship('Snap', secondary=batch_snaps,
+        backref=db.backref('batch', lazy='dynamic'))
+
+    galleries = db.relationship('Gallery', secondary=batch_galleries,
+        backref=db.backref('batch', lazy='dynamic'))
+
+
+    def __init__(self, title):
+        self.title = title
+
+    def __repr__(self):
+        return '<Batch {}>'.format(self.id)
 
 
 class Gallery(db.Model):
@@ -102,11 +140,17 @@ class Snap(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     initdate = db.Column(db.String, default=str(datetime.datetime.utcnow()))
     name = db.Column(db.String)
+    snap_original = db.Column(db.String)
+    snap_lores = db.Column(db.String)
+    snap_thumb = db.Column(db.String)
     private = db.Column(db.Boolean, default=True)
 
 
-    def __init__(self, name):
+    def __init__(self, name, snap_original, snap_lores, snap_thumb):
         self.name = name
+        self.snap_original = snap_original
+        self.snap_lores = snap_lores
+        self.snap_thumb = snap_thumb
 
     def __repr__(self):
         return '<Snap {}>'.format(self.id)
@@ -287,6 +331,139 @@ class AccountsL(Resource):
             return response, 400
 
 
+class Batches(Resource):
+    def get(self, id):
+        raw_batch = Batch.query.filter_by(id=id).first()
+
+        if raw_batch != None:
+            # batch[0]['snaps] returns instrumentedlist and wont give access to
+            # relationships in the model. Find a fix. Until then Overwritting 'snaps'
+            # key with a request to Snap model.
+            # Same as above but with galleries.
+            batch = convert.jsonify((raw_batch,))
+
+            batch_snaps = batch[0]['snaps']
+            snaps = []
+            galleries = []
+            for snap in batch_snaps:
+                raw_snap = Snap.query.filter_by(id=snap['id']).first()
+                json_snap = convert.jsonify((raw_snap,))[0]
+                snaps.append(json_snap)
+                for gallery in json_snap['gallery']:
+                    raw_gallery = Gallery.query.filter_by(id=gallery['id']).first()
+                    json_gallery = convert.jsonify((raw_gallery,))[0]
+                    if json_gallery not in galleries:
+                        galleries.append(json_gallery)
+                    
+
+            # overrite snaps in batch
+            batch[0]['snaps'] = snaps
+            batch[0]['galleries'] = galleries
+
+            response = resp(data=batch, status='success')
+            return response, 200
+
+        else:
+            response = resp(status='failed', error='no such gallery id')
+            return response, 400
+
+
+    @auth.login_required
+    def put(self, id):
+        parser = reqparse.RequestParser()
+        parser.add_argument('snaps', type=str, help='help text')
+        parser.add_argument('galleries', type=str, help='help text')
+        args = parser.parse_args()
+
+        get_batch = Batch.query.filter_by(id=id).first()
+
+        if get_batch != None:
+            if args['snaps']:
+                raw_snap = Snap.query.filter_by(id=args['snaps']).first()
+                if raw_snap != None:
+                    get_batch.snaps.append(raw_snap)
+                    db.session.commit()
+                    print('snaps is in there')
+
+                else:
+                    return resp(error='no such snap id')
+
+            if args['galleries']:
+                raw_gallery = Gallery.query.filter_by(id=args['galleries']).first()
+                if raw_gallery != None:
+                    get_batch.galleries.append(raw_gallery)
+                    db.session.commit()
+                    print('snaps is in there')
+
+                else:
+                    return resp(error='no such snap id')
+
+            else:
+                pass
+
+        else:
+            return resp(error='no such gallery id')
+
+
+    @auth.login_required
+    def delete(self, id):
+        get_batch = Batch.query.filter_by(id=id).first()
+        get_account = Account.query.filter_by(username=auth.username()).first()
+
+        if get_batch in get_account.batches:
+            db.session.delete(get_batch)
+            db.session.commit()
+
+            response = resp(status='success', message='batch successfully deleted')
+
+            return response, 201
+
+        else:
+            return resp(message='batch can only deleted by the account that posted it')
+
+
+class BatchesL(Resource):
+    def get(self):
+        accounts_galleries = Account.query.filter_by(username=auth.username()).first()
+        if accounts_galleries:
+            accounts_batches = accounts_galleries.batches
+
+            response = resp(data=convert.jsonify(accounts_batches), status='success')
+            return response, 200
+
+        else:
+            response = resp(status='failed', error='Returned NoneType')
+            return response, 401
+
+
+    @auth.login_required
+    def post(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('title', type=str, help='helper text')
+        args = parser.parse_args()
+
+        if args['title'] != None:
+            raw_account = Account.query.filter_by(username=auth.username()).first()
+
+            new_batch = Batch(title=args['title'])
+            new_batch.account.append(raw_account)
+
+            db.session.add(new_batch)
+            db.session.commit()
+
+            response = resp(
+                data=convert.jsonify((new_batch,)),
+                link='/batches/{}'.format(new_batch.id),
+                status='success'
+            )
+
+            return response, 201
+
+        else:
+            response = resp(error='missing required data', message='')
+            return response, 400
+
+
 class Galleries(Resource):
     def get(self, id):
         raw_gallery = Gallery.query.filter_by(id=id).first()
@@ -313,14 +490,13 @@ class Galleries(Resource):
 
         if get_gallery != None:
             if args['snaps']:
-                raw_snap = Snap.query.filter_by(id=args['snaps']).first()
-                if raw_snap != None:
-                    get_gallery.snaps.append(raw_snap)
-                    db.session.commit()
-                    print('snaps is in there')
-
-                else:
-                    return resp(error='no such snap id')
+                list_of_snaps = args['snaps'].split(' ')
+                for snap in list_of_snaps:
+                    raw_snap = Snap.query.filter_by(id=snap).first()
+                    if raw_snap != None:
+                        get_gallery.snaps.append(raw_snap)
+                        db.session.commit()
+                        print('snaps is in there')
 
             if args['private']:
                 if get_gallery.private:
@@ -384,6 +560,7 @@ class GalleriesL(Resource):
     def post(self):
         parser = reqparse.RequestParser()
         parser.add_argument('title', type=str, help='helper text')
+        parser.add_argument('snaps', type=str, help='helper text')
         args = parser.parse_args()
 
         if args['title'] != None:
@@ -394,6 +571,12 @@ class GalleriesL(Resource):
             new_gallery.shareuuid = str(uuid.uuid4())
             new_gallery.theme.append(default_theme)
             new_gallery.account.append(raw_account)
+
+            if args['snaps'] != '':
+                snap_list = args['snaps'].split(' ')
+                for snap_id in snap_list:
+                    raw_snap = Snap.query.filter_by(id=snap_id).first()
+                    new_gallery.snaps.append(raw_snap)
 
             db.session.add(new_gallery)
             db.session.commit()
@@ -476,13 +659,17 @@ class SnapsL(Resource):
 
     @auth.login_required
     def post(self):
+        # TODO: IMP - snap_original, snap_lores, snap_thumb
         parser = reqparse.RequestParser()
         parser.add_argument('name', type=str, help='helper text')
+        parser.add_argument('snap_original', type=str, help='helper text')
+        parser.add_argument('snap_lores', type=str, help='helper text')
+        parser.add_argument('snap_thumb', type=str, help='helper text')
         args = parser.parse_args()
 
         if args['name'] != None:
             raw_account = Account.query.filter_by(username=auth.username()).first()
-            new_snap = Snap(name=args['name'])
+            new_snap = Snap(name=args['name'], snap_original=args['name'], snap_lores=args['name'], snap_thumb=args['name'])
 
             new_snap.account.append(raw_account)
             db.session.add(new_snap)
@@ -585,7 +772,6 @@ class ThemesL(Resource):
             return response, 400
 
 
-
 # routes
 api.add_resource(Entry, '/')
 api.add_resource(Shareuuid, '/shareuuid/<uuid>')
@@ -593,6 +779,8 @@ api.add_resource(Accounts, '/accounts/<id>')
 api.add_resource(AccountsL, '/accounts')
 api.add_resource(Galleries, '/galleries/<id>')
 api.add_resource(GalleriesL, '/galleries')
+api.add_resource(Batches, '/batches/<id>')
+api.add_resource(BatchesL, '/batches')
 api.add_resource(Snaps, '/snaps/<id>')
 api.add_resource(SnapsL, '/snaps')
 api.add_resource(Themes, '/themes/<id>')

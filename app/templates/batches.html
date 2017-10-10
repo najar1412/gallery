@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="alert alert-secondary" role="alert">
+  <form class="form-inline" action="/new_batch" method="POST" enctype="multipart/form-data">
+    Upload New Batch &emsp;
+    <div class="form-group">
+      <input type="text" name="title" id="title" class="form-control" placeholder="Batch Name" required>
+    </div>
+    <label class="custom-file">
+      <input type="file" name="upload" class="custom-file-input" multiple>
+      <span class="custom-file-control"></span>
+
+    </label>
+     &emsp; | &emsp;
+    <button class="btn btn-primary" type="submit">Post</button>
+  </form>
+</div>
+
+{% if batches|length != 0 %}
+
+  {% for batch in batches %}
+
+    <div class="card text-white bg-dark mb-3" style="max-width: 100%;">
+      <div class="card-header"><small>{{batch.initdate}} | [{{ batch.snaps|length }}]</small></div>
+      <div class="card-body">
+        <br>
+        <br>
+        <a href="/batch/{{batch.id}}">
+          <h1 class="card-title">{{batch.title}}</h1>
+        </a>
+        <p class="card-text">
+        <form class="form-inline" action="/edit_batch/{{batch.id}}" method="POST">
+
+          <button class="btn btn-light" name='edit' type="submit">Edit</button> &emsp; |  &emsp;
+          <button class="btn btn-outline-danger" name='delete' type="submit">Delete</button>
+        </form>
+        </p>
+      </div>
+    </div>
+  {% endfor %}
+
+{% else %}
+
+<div class="alert alert-danger" role="alert">
+  You currently have no batches.
+</div>
+
+{% endif %}
+
+
+{% endblock %}
