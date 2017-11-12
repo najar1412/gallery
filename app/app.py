@@ -295,7 +295,6 @@ def new_gallery():
 
         return redirect('/galleries')
 
-
     # check if there are selected snaps for new gallery
     if 'selection' not in args:
         selection = ''
@@ -337,6 +336,7 @@ def new_batch():
 
     if uploaded_files and r.json()['status'] == 'success':
         batch_id = r.json()['data'][0]['id']
+        
         for x in uploaded_files:
             post_snap = requests.post(
                 '{}/snaps?name={}&snap_original={}&snap_lores={}&snap_thumb={}'.format(config.BASEURL, x, x, x, x),
