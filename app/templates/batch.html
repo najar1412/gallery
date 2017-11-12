@@ -8,7 +8,7 @@
 
 <div class="alert alert-secondary" role="alert">
   <form class="form-inline" action="/new_snap" method="POST" enctype="multipart/form-data">
-    Upload New Snap &emsp;
+    Upload New Snap to {{batch.0.title|capitalize}} &emsp;
     <label class="custom-file">
       <input type="file" name="upload" class="custom-file-input" multiple>
       <span class="custom-file-control"></span>
@@ -21,8 +21,12 @@
 
 <hr>
 
+<small style="padding-left: 20px; color: gray;">Galleries containing snaps from this batch:</small><br>
+
 {% set galleries = batch.0.galleries %}
-{% include 'gallery_table.html' %}
+{% for gallery in galleries %}
+<a href="/gallery/{{gallery.id}}">{{gallery.title}}</a>,
+{% endfor %}
 
 <hr>
 

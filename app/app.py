@@ -111,6 +111,7 @@ def share(uuid):
     gallery = requests.get(f'{config.BASEURL}/shareuuid/{uuid}').json()
 
     if 'status' in gallery and gallery['status'] == 'success':
+        print(gallery['data']['snaps'])
         snaps = [snap for snap in gallery['data']['snaps'] if snap['private'] != True]
         theme_name = gallery['data']['theme'][0]['name']
         theme_exists = func.check_file_server(os.path.join(
@@ -119,6 +120,7 @@ def share(uuid):
             ), f"{theme_name}.html")
 
         if theme_exists:
+            print(snaps)
             return render_template('theme/{}.html'.format(theme_name), gallery=snaps)
 
         elif theme_exists == False:
@@ -131,7 +133,6 @@ def share(uuid):
         return abort(404)
 
 
-# refactor for batches
 @app.route('/galleries')
 def galleries():
     user = func.SessionHandler(session).get()
@@ -169,7 +170,6 @@ def galleries():
 
     else:
         return redirect(url_for('login'))
-
 
 
 @app.route('/batches')
@@ -225,7 +225,6 @@ def snaps():
         return redirect(url_for('login'))
 
 
-# refactor for batches
 @app.route('/gallery/<int:id>')
 def gallery(id):
     user = func.SessionHandler(session).get()
@@ -249,7 +248,6 @@ def gallery(id):
         return redirect(url_for('login'))
 
 
-# refactor for batches
 @app.route('/batch/<int:id>')
 def batch(id):
     user = func.SessionHandler(session).get()
@@ -275,11 +273,17 @@ def batch(id):
         return redirect(url_for('login'))
 
 
-# refactor to work on batches
 @app.route('/new_gallery', methods=['GET', 'POST'])
 def new_gallery():
     user = func.SessionHandler(session).get()
     args = dict(request.form)
+    
+    if 'clear_selection' in args and args['clear_selection'][0] == 'True':
+        print('clearing selection')
+        func.SessionHandler(session).clear_selection()
+
+        return redirect('/galleries')
+
 
     # check if there are selected snaps for new gallery
     if 'selection' not in args:
@@ -298,6 +302,7 @@ def new_gallery():
         # append selected snaps to new gallery
 
         return redirect(f'gallery/{gallery_id}')
+
 
     return redirect(url_for('galleries'))
 
@@ -403,7 +408,6 @@ def edit_batch(id):
     return redirect(url_for('batches'))
 
 
-
 @app.route('/new_snap', methods=['GET', 'POST'])
 def new_snap():
     user = func.SessionHandler(session).get()
@@ -499,6 +503,7 @@ def fitler(filter):
     user = func.SessonHandler(session).get()
     if user:
         func.SessionHandler(session).filter(filter)
+
 
 @app.route('/settings')
 def settings():

@@ -1,19 +1,13 @@
 {% extends "base.html" %}
 {% block content %}
 
+<nav class="breadcrumb">
+        <a class="breadcrumb-item" href="/galleries">Galleries</a>
+        <span class="breadcrumb-item active">{{gallery.0.title|capitalize}}</span>
+    </nav>
 
 <div class="alert alert-dark" role="alert">
   Theme: {{gallery.0.theme.0.name}} <small><a href="">[change]</a></small> &emsp; | &emsp; Snaps: {{gallery.0.snaps|length}}
-</div>
-
-<div class="alert alert-secondary" role="alert">
-    <form class="form-inline" action="/edit_gallery/{{gallery.0.id}}" method="POST" enctype="multipart/form-data">
-        Add Snap to Gallery &emsp;
-        <div class="form-group">
-        <input type="text" name="snap_id" id="snap_id" class="form-control" placeholder="Snap ID" required>
-        </div>
-        <button class="btn btn-primary" type="submit">Post</button>
-    </form>
 </div>
 
 {% set snaps = gallery.0.snaps %}

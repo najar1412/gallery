@@ -40,6 +40,8 @@ class SessionHandler():
         result = {}
         for k in self.session:
             result[k] = self.session[k]
+
+
         return result
 
     def filter(self, filter):
@@ -61,7 +63,11 @@ class SessionHandler():
                 print(self.session['selection'])
                 self.session['selection'].append(snap_id)
                 self.session.modified = True
+
         print(self.session['selection'])
+
+    def clear_selection(self):
+        self.session['selection'] = []
 
 
     def close(self):
