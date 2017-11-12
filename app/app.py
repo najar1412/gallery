@@ -38,6 +38,7 @@ else:
 
 @app.route('/temptest')
 def temptest():
+    """use for testing themes"""
     return render_template('theme/slide.html')
 
 
@@ -58,8 +59,10 @@ def login():
             if check_auth:
                 return redirect(url_for('index'))
 
+
             else:
                 return redirect(url_for('login'))
+
 
         elif 'signup' in request.form:
             username = request.form['username']
@@ -67,7 +70,9 @@ def login():
             account_exists = func.SessionHandler(session).new(username, password)
             if account_exists:
                 print('accounts exists, return to login page')
+
                 return redirect(url_for('login'))
+
 
             else:
                 print('make new account')
@@ -75,6 +80,7 @@ def login():
                     f'{config.BASEURL}/accounts?username={username}&password={password}'
                     )
                 func.SessionHandler(session).new(username, password)
+
                 return redirect(url_for('index'))
 
     else:
@@ -84,6 +90,7 @@ def login():
 @app.route('/logout')
 def logout():
     user = func.SessionHandler(session).close()
+
     return redirect(url_for('index'))
 
 
@@ -102,6 +109,7 @@ def index():
 
         return render_template('index.html', user=user)
 
+
     return redirect(url_for('login'))
 
 
@@ -111,7 +119,6 @@ def share(uuid):
     gallery = requests.get(f'{config.BASEURL}/shareuuid/{uuid}').json()
 
     if 'status' in gallery and gallery['status'] == 'success':
-        print(gallery['data']['snaps'])
         snaps = [snap for snap in gallery['data']['snaps'] if snap['private'] != True]
         theme_name = gallery['data']['theme'][0]['name']
         theme_exists = func.check_file_server(os.path.join(
@@ -120,11 +127,12 @@ def share(uuid):
             ), f"{theme_name}.html")
 
         if theme_exists:
-            print(snaps)
             return render_template('theme/{}.html'.format(theme_name), gallery=snaps)
+
 
         elif theme_exists == False:
             return render_template('theme/default.html'.format(theme_name), gallery=snaps)
+
 
         else:
             print(f"Theme {theme_name} does not exist.")
@@ -168,6 +176,7 @@ def galleries():
 
         return render_template('galleries.html', galleries=galleries, themes=get_themes, user=user)
 
+
     else:
         return redirect(url_for('login'))
 
@@ -195,6 +204,7 @@ def batches():
 
         return render_template('batches.html', batches=batches, user=user)
 
+
     else:
         return redirect(url_for('login'))
 
@@ -220,6 +230,7 @@ def snaps():
             snaps = []
 
         return render_template('snaps.html', snaps=snaps, user=user)
+
 
     else:
         return redirect(url_for('login'))
